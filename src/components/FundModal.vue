@@ -1,46 +1,39 @@
 <template>
-  <view class="fund-modal" v-if="visible" @click="closeOnOverlay && close()">
-    <view class="modal-content" @click.stop>
+  <u-popup
+    :show="visible"
+    mode="bottom"
+    :round="32"
+    :closeOnClickOverlay="closeOnOverlay"
+    @close="close"
+    bgColor="#fff"
+    :zIndex="1000"
+    :customStyle="{ maxHeight: '70vh' }"
+  >
+    <view class="modal-content">
       <view class="modal-header">
         <text class="title">{{ isEdit ? '编辑资金池' : '新建资金池' }}</text>
-        <text class="close-btn" @click="close">×</text>
+        <u-icon name="close" size="24" color="#999" @click="close"></u-icon>
       </view>
-      
+
       <scroll-view class="modal-body" scroll-y>
         <!-- 名称 -->
         <view class="form-item">
           <text class="label">名称</text>
-          <input
-            class="input"
+          <u-input
             v-model="form.name"
             placeholder="请输入资金池名称"
             maxlength="20"
+            border="surround"
+            :customStyle="{ backgroundColor: '#f5f5f5' }"
           />
         </view>
-        
-        <!-- 目标金额 -->
+
+        <!-- 预算金额 -->
         <view class="form-item">
-          <text class="label">目标金额</text>
+          <text class="label">预算金额</text>
           <AmountInput v-model="form.targetAmount" placeholder="0.00" />
         </view>
-        
-        <!-- 截止月份 -->
-        <view class="form-item">
-          <text class="label">截止月份</text>
-          <picker
-            mode="date"
-            fields="month"
-            :value="form.deadline"
-            :start="minDate"
-            @change="onDeadlineChange"
-          >
-            <view class="picker-value">
-              <text>{{ formatDeadline(form.deadline) }}</text>
-              <text class="arrow">▼</text>
-            </view>
-          </picker>
-        </view>
-        
+
         <!-- 颜色选择 -->
         <view class="form-item">
           <text class="label">颜色标识</text>
@@ -53,19 +46,24 @@
               :style="{ backgroundColor: color }"
               @click="form.color = color"
             >
-              <text v-if="form.color === color" class="check">✓</text>
+              <u-icon v-if="form.color === color" name="checkmark" size="16" color="#fff"></u-icon>
             </view>
           </view>
         </view>
       </scroll-view>
-      
+
       <view class="modal-footer">
-        <button class="btn-save" @click="save" :disabled="!canSave">
-          {{ isEdit ? '保存' : '创建' }}
-        </button>
+        <u-button
+          :text="isEdit ? '保存' : '创建'"
+          shape="circle"
+          size="large"
+          :color="canSave ? 'linear-gradient(135deg, #3E8FD4 0%, #2E6FA8 100%)' : '#ccc'"
+          :disabled="!canSave"
+          @click="save"
+        />
       </view>
     </view>
-  </view>
+  </u-popup>
 </template>
 
 <script setup lang="ts">
@@ -90,17 +88,13 @@ const isEdit = computed(() => !!props.fund)
 const form = ref({
   name: '',
   targetAmount: 0,
-  deadline: '',
   color: FUND_COLORS[0],
 })
 
-const minDate = computed(() => {
-  const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-})
-
 const canSave = computed(() => {
-  return form.value.name.trim() && form.value.targetAmount > 0 && form.value.deadline
+  const nameValid = form.value.name && form.value.name.trim().length > 0
+  const amountValid = Number(form.value.targetAmount) > 0
+  return nameValid && amountValid
 })
 
 watch(() => props.visible, (val) => {
@@ -109,7 +103,6 @@ watch(() => props.visible, (val) => {
       form.value = {
         name: props.fund.name,
         targetAmount: props.fund.targetAmount,
-        deadline: props.fund.deadline,
         color: props.fund.color,
       }
     } else {
@@ -119,34 +112,21 @@ watch(() => props.visible, (val) => {
 })
 
 const resetForm = () => {
-  const now = new Date()
-  const nextYear = new Date(now.getFullYear() + 1, now.getMonth(), 1)
   form.value = {
     name: '',
     targetAmount: 0,
-    deadline: `${nextYear.getFullYear()}-${String(nextYear.getMonth() + 1).padStart(2, '0')}`,
     color: FUND_COLORS[0],
   }
 }
 
-const onDeadlineChange = (e: any) => {
-  form.value.deadline = e.detail.value
-}
-
-const formatDeadline = (deadline: string) => {
-  if (!deadline) return '请选择'
-  const [year, month] = deadline.split('-')
-  return `${year}年${parseInt(month)}月`
-}
-
 const save = () => {
   if (!canSave.value) return
-  
+
   const data = {
     ...form.value,
     id: props.fund?.id,
   }
-  
+
   emit('save', data)
   close()
 }
@@ -156,141 +136,74 @@ const close = () => {
 }
 </script>
 
-<style lang="scss" scoped>
-.fund-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
+<style scoped>
+.modal-content {
+  width: 100%;
+  max-height: 70vh;
+  background: #fff;
+  border-radius: 32rpx 32rpx 0 0;
   display: flex;
-  align-items: flex-end;
-  
-  .modal-content {
-    width: 100%;
-    max-height: 85vh;
-    background: #fff;
-    border-radius: 32rpx 32rpx 0 0;
-    display: flex;
-    flex-direction: column;
-    
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 32rpx;
-      border-bottom: 1rpx solid #f0f0f0;
-      
-      .title {
-        font-size: 32rpx;
-        font-weight: 600;
-        color: #333;
-      }
-      
-      .close-btn {
-        font-size: 48rpx;
-        color: #999;
-        line-height: 1;
-      }
-    }
-    
-    .modal-body {
-      flex: 1;
-      padding: 32rpx;
-      
-      .form-item {
-        margin-bottom: 32rpx;
-        
-        .label {
-          display: block;
-          font-size: 28rpx;
-          color: #333;
-          margin-bottom: 16rpx;
-          font-weight: 500;
-        }
-        
-        .input {
-          width: 100%;
-          height: 80rpx;
-          padding: 0 24rpx;
-          background: #f5f5f5;
-          border-radius: 8rpx;
-          font-size: 28rpx;
-        }
-        
-        .picker-value {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 20rpx 24rpx;
-          background: #f5f5f5;
-          border-radius: 8rpx;
-          font-size: 28rpx;
-          color: #333;
-          
-          .arrow {
-            font-size: 20rpx;
-            color: #999;
-          }
-        }
-        
-        .color-list {
-          display: flex;
-          gap: 24rpx;
-          flex-wrap: wrap;
-          
-          .color-item {
-            width: 72rpx;
-            height: 72rpx;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s;
-            
-            &.active {
-              transform: scale(1.15);
-              box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.2);
-            }
-            
-            .check {
-              color: #fff;
-              font-size: 32rpx;
-              font-weight: bold;
-            }
-          }
-        }
-      }
-    }
-    
-    .modal-footer {
-      padding: 24rpx 32rpx;
-      padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
-      border-top: 1rpx solid #f0f0f0;
-      
-      .btn-save {
-        width: 100%;
-        height: 88rpx;
-        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-        color: #fff;
-        border-radius: 44rpx;
-        font-size: 32rpx;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        
-        &[disabled] {
-          opacity: 0.5;
-        }
-        
-        &:active {
-          opacity: 0.9;
-        }
-      }
-    }
-  }
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  border-bottom: 1rpx solid #EDF4FB;
+  flex-shrink: 0;
+}
+
+.modal-header .title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #0C3D6B;
+}
+
+.modal-body {
+  flex: 1;
+  padding: 24rpx 32rpx;
+  overflow-y: auto;
+}
+
+.form-item {
+  margin-bottom: 24rpx;
+}
+
+.form-item .label {
+  display: block;
+  font-size: 24rpx;
+  color: #1C3A5A;
+  margin-bottom: 12rpx;
+  font-weight: 500;
+}
+
+.form-item .color-list {
+  display: flex;
+  gap: 20rpx;
+  flex-wrap: wrap;
+}
+
+.form-item .color-list .color-item {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.form-item .color-list .color-item.active {
+  transform: scale(1.1);
+  box-shadow: 0 4rpx 12rpx rgba(62, 143, 212, 0.3);
+}
+
+.modal-footer {
+  padding: 20rpx 32rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid #EDF4FB;
+  flex-shrink: 0;
 }
 </style>

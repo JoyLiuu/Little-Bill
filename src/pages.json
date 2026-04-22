@@ -1,4 +1,13 @@
 {
+  "easycom": {
+  		"autoscan": true,
+  		// 注意一定要放在custom里，否则无效，https://ask.dcloud.net.cn/question/131175
+  		"custom": {
+  			"^u--(.*)": "uview-plus/components/u-$1/u-$1.vue",
+  			"^up-(.*)": "uview-plus/components/u-$1/u-$1.vue",
+  	        "^u-([^-].*)": "uview-plus/components/u-$1/u-$1.vue"
+  		}
+  	},
   "pages": [
     {
       "path": "pages/index/index",
@@ -35,6 +44,12 @@
       "style": {
         "navigationBarTitleText": "年度报告"
       }
+    },
+    {
+      "path": "pages/day-detail/day-detail",
+      "style": {
+        "navigationBarTitleText": "当日明细"
+      }
     }
   ],
   "globalStyle": {
@@ -45,29 +60,39 @@
   },
   "tabBar": {
     "color": "#999999",
-    "selectedColor": "#4CAF50",
+    "selectedColor": "#B8A9C9",
     "borderStyle": "black",
     "backgroundColor": "#ffffff",
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "首页"
+        "text": "首页",
+        "iconPath": "static/tabbar/home.png",
+        "selectedIconPath": "static/tabbar/home-active.png"
       },
       {
         "pagePath": "pages/ledger/ledger",
-        "text": "记账本"
+        "text": "记账本",
+        "iconPath": "static/tabbar/ledger.png",
+        "selectedIconPath": "static/tabbar/ledger-active.png"
       },
       {
         "pagePath": "pages/statistics/statistics",
-        "text": "统计"
+        "text": "统计",
+        "iconPath": "static/tabbar/chart.png",
+        "selectedIconPath": "static/tabbar/chart-active.png"
       },
       {
         "pagePath": "pages/funds/funds",
-        "text": "资金池"
+        "text": "资金池",
+        "iconPath": "static/tabbar/funds.png",
+        "selectedIconPath": "static/tabbar/funds-active.png"
       },
       {
         "pagePath": "pages/profile/profile",
-        "text": "我的"
+        "text": "我的",
+        "iconPath": "static/tabbar/profile.png",
+        "selectedIconPath": "static/tabbar/profile-active.png"
       }
     ]
   },

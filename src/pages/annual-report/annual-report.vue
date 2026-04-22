@@ -3,45 +3,45 @@
     <!-- 顶部 -->
     <view class="header">
       <view class="year-selector">
-        <text class="arrow" @click="changeYear(-1)">‹</text>
+        <u-icon name="arrow-left" size="24" color="rgba(255,255,255,0.8)" @click="changeYear(-1)"></u-icon>
         <picker
           mode="date"
           fields="year"
           :value="String(currentYear)"
           @change="onYearChange"
         >
-          <text class="year-text">{{ currentYear }}年</text>
+          <u-text :text="`${currentYear}年`" size="20" color="#fff" bold></u-text>
         </picker>
-        <text class="arrow" @click="changeYear(1)">›</text>
+        <u-icon name="arrow-right" size="24" color="rgba(255,255,255,0.8)" @click="changeYear(1)"></u-icon>
       </view>
-      <text class="subtitle">年度报告</text>
+      <u-text text="年度报告" size="20" color="rgba(255,255,255,0.8)"></u-text>
     </view>
 
     <scroll-view class="report-content" scroll-y>
       <!-- 总览卡片 -->
       <view class="overview-cards">
         <view class="overview-card expense" @click="showExpenseDetail = true">
-          <view class="card-icon">💳</view>
+          <u-icon name="red-packet" size="20" color="#ff5252"></u-icon>
           <view class="card-info">
-            <text class="label">日常消费</text>
-            <text class="amount">¥{{ formatAmount(totalExpense) }}</text>
+            <u-text text="日常消费" size="24" color="#999"></u-text>
+            <u-text :text="`¥${formatAmount(totalExpense)}`" size="20" color="#333" bold></u-text>
           </view>
-          <text class="arrow">›</text>
+          <u-icon name="arrow-right" size="20" color="#ccc"></u-icon>
         </view>
 
         <view class="overview-card fund" @click="showFundDetail = true">
-          <view class="card-icon">🏦</view>
+          <u-icon name="rmb-circle" size="20" color="#4CAF50"></u-icon>
           <view class="card-info">
-            <text class="label">资金池存入</text>
-            <text class="amount">¥{{ formatAmount(totalFundDeposit) }}</text>
+            <u-text text="资金池存入" size="24" color="#999"></u-text>
+            <u-text :text="`¥${formatAmount(totalFundDeposit)}`" size="20" color="#333" bold></u-text>
           </view>
-          <text class="arrow">›</text>
+          <u-icon name="arrow-right" size="20" color="#ccc"></u-icon>
         </view>
       </view>
 
       <!-- 月度消费趋势 -->
       <view class="chart-section">
-        <view class="section-title">月度消费趋势</view>
+        <u-text text="月度消费趋势" size="20" color="#333" bold class="section-title"></u-text>
         <view class="chart-container">
           <view class="month-chart" v-if="monthlyStats.length > 0">
             <view
@@ -63,55 +63,50 @@
             </view>
           </view>
           <view class="empty-chart" v-else>
-            <text>暂无数据</text>
+            <u-text text="暂无数据" size="20" color="#999"></u-text>
           </view>
         </view>
       </view>
 
       <!-- 消费分类排行 -->
       <view class="category-section">
-        <view class="section-title">消费分类排行</view>
+        <u-text text="消费分类排行" size="20" color="#333" bold class="section-title"></u-text>
         <view class="category-list" v-if="categoryStats.length > 0">
           <view
             v-for="(item, index) in categoryStats.slice(0, 8)"
             :key="item.categoryId"
             class="category-item"
           >
-            <view class="rank">{{ index + 1 }}</view>
+            <u-text :text="String(index + 1)" size="20" color="#999" bold class="rank"></u-text>
             <view
               class="icon"
               :style="{ backgroundColor: item.categoryColor + '20' }"
             >
-              <text class="iconfont" :style="{ color: item.categoryColor }">
-                {{ item.categoryIcon }}
-              </text>
+              <u-icon :name="item.categoryIcon" size="20" :color="item.categoryColor"></u-icon>
             </view>
             <view class="info">
-              <text class="name">{{ item.categoryName }}</text>
-              <view class="progress-bar">
-                <view
-                  class="progress-fill"
-                  :style="{ 
-                    width: item.percentage + '%',
-                    backgroundColor: item.categoryColor 
-                  }"
-                ></view>
-              </view>
+              <u-text :text="item.categoryName" size="20" color="#333"></u-text>
+              <u-line-progress
+                :percentage="item.percentage"
+                :active-color="item.categoryColor"
+                height="8"
+                :show-percent="false"
+              />
             </view>
             <view class="amount">
-              <text class="value">¥{{ formatAmount(item.amount) }}</text>
-              <text class="percent">{{ item.percentage }}%</text>
+              <u-text :text="`¥${formatAmount(item.amount)}`" size="20" color="#333" bold></u-text>
+              <u-text :text="`${item.percentage}%`" size="22" color="#999"></u-text>
             </view>
           </view>
         </view>
         <view class="empty-list" v-else>
-          <text>暂无消费数据</text>
+          <u-text text="暂无消费数据" size="20" color="#999"></u-text>
         </view>
       </view>
 
       <!-- 资金池总结 -->
       <view class="fund-section" v-if="fundStats.length > 0">
-        <view class="section-title">资金池总结</view>
+        <u-text text="资金池总结" size="20" color="#333" bold class="section-title"></u-text>
         <view class="fund-list">
           <view
             v-for="fund in fundStats"
@@ -119,22 +114,24 @@
             class="fund-item"
           >
             <view class="fund-header">
-              <text class="name">{{ fund.fundName }}</text>
-              <text class="status" :class="fund.status">
-                {{ fund.status === 'active' ? '进行中' : '已完成' }}
-              </text>
+              <u-text :text="fund.fundName" size="20" color="#333" bold></u-text>
+              <u-tag
+                :text="fund.status === 'active' ? '进行中' : '已完成'"
+                :type="fund.status === 'active' ? 'success' : 'warning'"
+                size="mini"
+              />
             </view>
             <view class="fund-progress">
               <view class="progress-info">
-                <text>目标: ¥{{ formatAmount(fund.targetAmount) }}</text>
-                <text>已存: ¥{{ formatAmount(fund.currentAmount) }}</text>
+                <u-text :text="`目标: ¥${formatAmount(fund.targetAmount)}`" size="24" color="#666"></u-text>
+                <u-text :text="`已存: ¥${formatAmount(fund.currentAmount)}`" size="24" color="#666"></u-text>
               </view>
-              <view class="progress-bar">
-                <view
-                  class="progress-fill"
-                  :style="{ width: Math.min((fund.currentAmount / fund.targetAmount) * 100, 100) + '%' }"
-                ></view>
-              </view>
+              <u-line-progress
+                :percentage="Math.min(Math.round((fund.currentAmount / fund.targetAmount) * 100), 100)"
+                active-color="#4CAF50"
+                height="8"
+                :show-percent="false"
+              />
             </view>
           </view>
         </view>
@@ -142,19 +139,31 @@
 
       <!-- 分享按钮 -->
       <view class="share-section">
-        <button class="btn-share" @click="shareReport">
-          <text class="icon">📤</text>
-          <text>分享报告</text>
-        </button>
+        <u-button
+          text="分享报告"
+          shape="circle"
+          size="large"
+          color="linear-gradient(135deg, #4CAF50 0%, #45a049 100%)"
+          :customStyle="{ boxShadow: '0 8rpx 24rpx rgba(76, 175, 80, 0.3)' }"
+          @click="shareReport"
+        />
       </view>
     </scroll-view>
 
     <!-- 消费详情弹窗 -->
-    <view class="modal" v-if="showExpenseDetail" @click="showExpenseDetail = false">
-      <view class="modal-content" @click.stop>
+    <u-popup
+      :show="showExpenseDetail"
+      mode="bottom"
+      :round="32"
+      @close="showExpenseDetail = false"
+      bgColor="#fff"
+      :zIndex="1000"
+      :customStyle="{ maxHeight: '70vh' }"
+    >
+      <view class="modal-content">
         <view class="modal-header">
-          <text class="title">消费明细</text>
-          <text class="close" @click="showExpenseDetail = false">×</text>
+          <u-text text="消费明细" size="20" color="#333" bold></u-text>
+          <u-icon name="close" size="24" color="#999" @click="showExpenseDetail = false"></u-icon>
         </view>
         <scroll-view class="modal-body" scroll-y>
           <view class="detail-list">
@@ -167,27 +176,33 @@
                 class="icon"
                 :style="{ backgroundColor: item.categoryColor + '20' }"
               >
-                <text class="iconfont" :style="{ color: item.categoryColor }">
-                  {{ item.categoryIcon }}
-                </text>
+                <u-icon :name="item.categoryIcon" size="20" :color="item.categoryColor"></u-icon>
               </view>
               <view class="info">
-                <text class="name">{{ item.categoryName }}</text>
-                <text class="count">{{ item.count }}笔</text>
+                <u-text :text="item.categoryName" size="20" color="#333"></u-text>
+                <u-text :text="`${item.count}笔`" size="24" color="#999"></u-text>
               </view>
-              <text class="amount">¥{{ formatAmount(item.amount) }}</text>
+              <u-text :text="`¥${formatAmount(item.amount)}`" size="20" color="#333" bold></u-text>
             </view>
           </view>
         </scroll-view>
       </view>
-    </view>
+    </u-popup>
 
     <!-- 资金池详情弹窗 -->
-    <view class="modal" v-if="showFundDetail" @click="showFundDetail = false">
-      <view class="modal-content" @click.stop>
+    <u-popup
+      :show="showFundDetail"
+      mode="bottom"
+      :round="32"
+      @close="showFundDetail = false"
+      bgColor="#fff"
+      :zIndex="1000"
+      :customStyle="{ maxHeight: '70vh' }"
+    >
+      <view class="modal-content">
         <view class="modal-header">
-          <text class="title">资金池明细</text>
-          <text class="close" @click="showFundDetail = false">×</text>
+          <u-text text="资金池明细" size="20" color="#333" bold></u-text>
+          <u-icon name="close" size="24" color="#999" @click="showFundDetail = false"></u-icon>
         </view>
         <scroll-view class="modal-body" scroll-y>
           <view class="detail-list">
@@ -197,22 +212,23 @@
               class="detail-item"
             >
               <view class="icon" style="background: #e8f5e9;">
-                <text style="color: #4CAF50;">🏦</text>
+                <u-icon name="rmb-circle" size="20" color="#4CAF50"></u-icon>
               </view>
               <view class="info">
-                <text class="name">{{ fund.fundName }}</text>
-                <text class="count">
-                  存入: ¥{{ formatAmount(fund.depositTotal) }}
-                </text>
+                <u-text :text="fund.fundName" size="20" color="#333"></u-text>
+                <u-text :text="`存入: ¥${formatAmount(fund.depositTotal)}`" size="24" color="#999"></u-text>
               </view>
-              <text class="amount">
-                {{ Math.round((fund.currentAmount / fund.targetAmount) * 100) }}%
-              </text>
+              <u-text
+                :text="`${Math.round((fund.currentAmount / fund.targetAmount) * 100)}%`"
+                size="20"
+                color="#4CAF50"
+                bold
+              ></u-text>
             </view>
           </view>
         </scroll-view>
       </view>
-    </view>
+    </u-popup>
   </view>
 </template>
 
@@ -319,23 +335,7 @@ onMounted(() => {
       align-items: center;
       justify-content: center;
       margin-bottom: 16rpx;
-
-      .arrow {
-        font-size: 48rpx;
-        color: rgba(255, 255, 255, 0.8);
-        padding: 0 40rpx;
-      }
-
-      .year-text {
-        font-size: 48rpx;
-        color: #fff;
-        font-weight: 600;
-      }
-    }
-
-    .subtitle {
-      font-size: 28rpx;
-      color: rgba(255, 255, 255, 0.8);
+      gap: 40rpx;
     }
   }
 
@@ -364,32 +364,9 @@ onMounted(() => {
           border-left: 8rpx solid #4CAF50;
         }
 
-        .card-icon {
-          font-size: 48rpx;
-          margin-right: 16rpx;
-        }
-
         .card-info {
           flex: 1;
-
-          .label {
-            display: block;
-            font-size: 24rpx;
-            color: #999;
-            margin-bottom: 8rpx;
-          }
-
-          .amount {
-            display: block;
-            font-size: 36rpx;
-            font-weight: bold;
-            color: #333;
-          }
-        }
-
-        .arrow {
-          font-size: 32rpx;
-          color: #ccc;
+          margin: 0 16rpx;
         }
       }
     }
@@ -403,9 +380,6 @@ onMounted(() => {
       margin-bottom: 20rpx;
 
       .section-title {
-        font-size: 32rpx;
-        font-weight: 600;
-        color: #333;
         margin-bottom: 24rpx;
       }
     }
@@ -462,7 +436,6 @@ onMounted(() => {
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #999;
         }
       }
     }
@@ -481,9 +454,6 @@ onMounted(() => {
 
           .rank {
             width: 48rpx;
-            font-size: 28rpx;
-            color: #999;
-            font-weight: 500;
           }
 
           .icon {
@@ -494,52 +464,15 @@ onMounted(() => {
             align-items: center;
             justify-content: center;
             margin-right: 20rpx;
-
-            .iconfont {
-              font-size: 32rpx;
-            }
           }
 
           .info {
             flex: 1;
-
-            .name {
-              display: block;
-              font-size: 28rpx;
-              color: #333;
-              margin-bottom: 8rpx;
-            }
-
-            .progress-bar {
-              height: 8rpx;
-              background: #f0f0f0;
-              border-radius: 4rpx;
-              overflow: hidden;
-
-              .progress-fill {
-                height: 100%;
-                border-radius: 4rpx;
-              }
-            }
           }
 
           .amount {
             text-align: right;
             margin-left: 20rpx;
-
-            .value {
-              display: block;
-              font-size: 28rpx;
-              color: #333;
-              font-weight: 500;
-            }
-
-            .percent {
-              display: block;
-              font-size: 22rpx;
-              color: #999;
-              margin-top: 4rpx;
-            }
           }
         }
       }
@@ -547,7 +480,6 @@ onMounted(() => {
       .empty-list {
         padding: 60rpx;
         text-align: center;
-        color: #999;
       }
     }
 
@@ -566,52 +498,13 @@ onMounted(() => {
             justify-content: space-between;
             align-items: center;
             margin-bottom: 16rpx;
-
-            .name {
-              font-size: 30rpx;
-              color: #333;
-              font-weight: 500;
-            }
-
-            .status {
-              font-size: 22rpx;
-              padding: 4rpx 12rpx;
-              border-radius: 8rpx;
-              background: #f0f0f0;
-              color: #999;
-
-              &.active {
-                background: #e8f5e9;
-                color: #4CAF50;
-              }
-
-              &.completed {
-                background: #fff3e0;
-                color: #ff9800;
-              }
-            }
           }
 
           .fund-progress {
             .progress-info {
               display: flex;
               justify-content: space-between;
-              font-size: 24rpx;
-              color: #666;
               margin-bottom: 12rpx;
-            }
-
-            .progress-bar {
-              height: 8rpx;
-              background: #f0f0f0;
-              border-radius: 4rpx;
-              overflow: hidden;
-
-              .progress-fill {
-                height: 100%;
-                background: linear-gradient(90deg, #4CAF50 0%, #81C784 100%);
-                border-radius: 4rpx;
-              }
             }
           }
         }
@@ -620,124 +513,53 @@ onMounted(() => {
 
     .share-section {
       padding: 20rpx 0 40rpx;
-
-      .btn-share {
-        width: 100%;
-        height: 88rpx;
-        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-        border-radius: 44rpx;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 8rpx 24rpx rgba(76, 175, 80, 0.3);
-
-        &:active {
-          opacity: 0.9;
-        }
-
-        .icon {
-          font-size: 32rpx;
-          margin-right: 12rpx;
-        }
-
-        text {
-          font-size: 32rpx;
-          color: #fff;
-          font-weight: 500;
-        }
-      }
     }
   }
 
-  .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
+  .modal-content {
+    width: 100%;
+    max-height: 70vh;
+    background: #fff;
+    border-radius: 32rpx 32rpx 0 0;
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
 
-    .modal-content {
-      width: 100%;
-      max-height: 70vh;
-      background: #fff;
-      border-radius: 32rpx 32rpx 0 0;
+    .modal-header {
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 32rpx;
+      border-bottom: 2rpx solid #f5f5f5;
+    }
 
-      .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 32rpx;
-        border-bottom: 2rpx solid #f5f5f5;
+    .modal-body {
+      flex: 1;
+      padding: 24rpx;
+      overflow-y: auto;
 
-        .title {
-          font-size: 32rpx;
-          font-weight: 600;
-          color: #333;
-        }
+      .detail-list {
+        .detail-item {
+          display: flex;
+          align-items: center;
+          padding: 24rpx 0;
+          border-bottom: 2rpx solid #f5f5f5;
 
-        .close {
-          font-size: 48rpx;
-          color: #999;
-        }
-      }
+          &:last-child {
+            border-bottom: none;
+          }
 
-      .modal-body {
-        flex: 1;
-        padding: 24rpx;
-        overflow-y: auto;
-
-        .detail-list {
-          .detail-item {
+          .icon {
+            width: 72rpx;
+            height: 72rpx;
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            padding: 24rpx 0;
-            border-bottom: 2rpx solid #f5f5f5;
+            justify-content: center;
+            margin-right: 20rpx;
+          }
 
-            &:last-child {
-              border-bottom: none;
-            }
-
-            .icon {
-              width: 72rpx;
-              height: 72rpx;
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              margin-right: 20rpx;
-
-              .iconfont {
-                font-size: 36rpx;
-              }
-            }
-
-            .info {
-              flex: 1;
-
-              .name {
-                display: block;
-                font-size: 30rpx;
-                color: #333;
-                margin-bottom: 4rpx;
-              }
-
-              .count {
-                font-size: 24rpx;
-                color: #999;
-              }
-            }
-
-            .amount {
-              font-size: 32rpx;
-              color: #333;
-              font-weight: 500;
-            }
+          .info {
+            flex: 1;
           }
         }
       }

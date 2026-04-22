@@ -28,7 +28,6 @@ export interface FundPool {
   name: string
   targetAmount: number
   currentAmount: number
-  deadline: string
   color: string
   status: 'active' | 'completed'
   createTime: number

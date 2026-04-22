@@ -218,25 +218,18 @@ export const useRecordStore = defineStore('record', () => {
     storage.set(STORAGE_KEYS.RECORDS, records.value)
   }
 
-  // 获取年度总支出
-  const getYearTotalExpense = (year: number): number => {
+  // 获取年度统计
+  const getYearTotal = (year: number, type: 'expense' | 'income'): number => {
     return records.value
-      .filter(r => {
-        const date = dayjs(r.date)
-        return date.year() === year && r.type === 'expense'
-      })
+      .filter(r => dayjs(r.date).year() === year && r.type === type)
       .reduce((sum, r) => sum + r.amount, 0)
   }
 
+  // 获取年度总支出
+  const getYearTotalExpense = (year: number): number => getYearTotal(year, 'expense')
+
   // 获取年度总收入
-  const getYearTotalIncome = (year: number): number => {
-    return records.value
-      .filter(r => {
-        const date = dayjs(r.date)
-        return date.year() === year && r.type === 'income'
-      })
-      .reduce((sum, r) => sum + r.amount, 0)
-  }
+  const getYearTotalIncome = (year: number): number => getYearTotal(year, 'income')
 
   return {
     records,

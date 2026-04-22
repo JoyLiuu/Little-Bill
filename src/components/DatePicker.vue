@@ -2,39 +2,43 @@
   <view class="date-picker">
     <!-- 日期显示按钮 -->
     <view class="picker-content" @click="openCalendar">
-      <text class="date-text">{{ displayDate }}</text>
-      <text class="arrow">▼</text>
+      <u-text :text="displayDate" size="20" color="#333"></u-text>
+      <u-icon name="arrow-down" size="14" color="#999"></u-icon>
     </view>
 
     <!-- 日历弹窗 -->
-    <view
-      class="calendar-modal"
-      v-if="showCalendar"
-      @click="closeCalendar"
-      @touchmove.stop.prevent="onTouchMove"
+    <u-popup
+      :show="showCalendar"
+      mode="center"
+      :round="24"
+      :closeOnClickOverlay="true"
+      @close="closeCalendar"
+      bgColor="#fff"
+      :zIndex="1000"
+      :customStyle="{ width: '85%' }"
     >
-      <view class="calendar-content" @click.stop @touchmove.stop>
+      <view class="calendar-content">
         <!-- 头部 -->
         <view class="calendar-header">
-          <text class="cancel-btn" @click="closeCalendar">取消</text>
-          <text class="title">选择日期</text>
-          <text class="confirm-btn" @click="confirmDate">确定</text>
+          <u-text text="取消" size="20" color="#999" @click="closeCalendar"></u-text>
+          <u-text text="选择日期" size="20" color="#333" bold></u-text>
+          <u-text text="确定" size="20" color="#4CAF50" @click="confirmDate"></u-text>
         </view>
 
+        <!-- 年月选择器 -->
+        <view class="month-selector">
+          <u-icon name="arrow-left" size="20" color="#666" @click="prevMonth"></u-icon>
+          <u-text :text="`${currentYear}年${currentMonth + 1}月`" size="20" color="#333" bold></u-text>
+          <u-icon name="arrow-right" size="20" color="#666" @click="nextMonth"></u-icon>
+        </view>
+
+        <!-- 星期标题 -->
+        <view class="week-header">
+          <text v-for="day in weekDays" :key="day" class="week-day">{{ day }}</text>
+        </view>
+
+        <!-- 日期网格 -->
         <scroll-view class="calendar-body" scroll-y>
-          <!-- 年月选择器 -->
-          <view class="month-selector">
-            <text class="arrow-btn" @click="prevMonth">‹</text>
-            <text class="current-month">{{ currentYear }}年{{ currentMonth + 1 }}月</text>
-            <text class="arrow-btn" @click="nextMonth">›</text>
-          </view>
-
-          <!-- 星期标题 -->
-          <view class="week-header">
-            <text v-for="day in weekDays" :key="day" class="week-day">{{ day }}</text>
-          </view>
-
-          <!-- 日期网格 -->
           <view class="days-grid">
             <view
               v-for="(day, index) in calendarDays"
@@ -53,7 +57,7 @@
           </view>
         </scroll-view>
       </view>
-    </view>
+    </u-popup>
   </view>
 </template>
 
@@ -157,18 +161,19 @@ const nextMonth = () => {
   }
 }
 
-const selectDate = (day: any) => {
-  if (isDisabled(day)) return
+const formatDayToString = (day: any): string => {
   const month = String(day.month + 1).padStart(2, '0')
   const date = String(day.date).padStart(2, '0')
-  selectedDate.value = `${day.year}-${month}-${date}`
+  return `${day.year}-${month}-${date}`
+}
+
+const selectDate = (day: any) => {
+  if (isDisabled(day)) return
+  selectedDate.value = formatDayToString(day)
 }
 
 const isSelected = (day: any) => {
-  const month = String(day.month + 1).padStart(2, '0')
-  const date = String(day.date).padStart(2, '0')
-  const dateStr = `${day.year}-${month}-${date}`
-  return dateStr === selectedDate.value
+  return formatDayToString(day) === selectedDate.value
 }
 
 const isToday = (day: any) => {
@@ -179,16 +184,7 @@ const isToday = (day: any) => {
 }
 
 const isDisabled = (day: any) => {
-  const month = String(day.month + 1).padStart(2, '0')
-  const date = String(day.date).padStart(2, '0')
-  const dateStr = `${day.year}-${month}-${date}`
-  const today = formatDate(new Date())
-  return dateStr > today
-}
-
-// 阻止滚动穿透
-const onTouchMove = () => {
-  // 什么都不做，只是阻止事件冒泡和默认行为
+  return formatDayToString(day) > formatDate(new Date())
 }
 
 watch(() => props.modelValue, (val) => {
@@ -196,45 +192,24 @@ watch(() => props.modelValue, (val) => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .date-picker {
-  .picker-content {
-    display: flex;
-    align-items: center;
-    padding: 16rpx 24rpx;
-    background: #f5f5f5;
-    border-radius: 8rpx;
-
-    .date-text {
-      font-size: 28rpx;
-      color: #333;
-      margin-right: 16rpx;
-    }
-
-    .arrow {
-      font-size: 20rpx;
-      color: #999;
-    }
-  }
+  width: 100%;
 }
 
-.calendar-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 2000;
+.date-picker .picker-content {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 40rpx;
+  justify-content: space-between;
+  padding: 16rpx 20rpx;
+  background: #f5f5f5;
+  border-radius: 12rpx;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .calendar-content {
   width: 100%;
-  max-width: 600rpx;
   max-height: 70vh;
   background: #fff;
   border-radius: 24rpx;
@@ -246,6 +221,7 @@ watch(() => props.modelValue, (val) => {
 .calendar-body {
   flex: 1;
   overflow: hidden;
+  max-height: 500rpx;
 }
 
 .calendar-header {
@@ -254,23 +230,6 @@ watch(() => props.modelValue, (val) => {
   align-items: center;
   padding: 30rpx;
   border-bottom: 1rpx solid #f0f0f0;
-
-  .cancel-btn {
-    font-size: 28rpx;
-    color: #999;
-  }
-
-  .title {
-    font-size: 32rpx;
-    font-weight: 600;
-    color: #333;
-  }
-
-  .confirm-btn {
-    font-size: 28rpx;
-    color: #4CAF50;
-    font-weight: 500;
-  }
 }
 
 .month-selector {
@@ -278,21 +237,7 @@ watch(() => props.modelValue, (val) => {
   justify-content: center;
   align-items: center;
   padding: 24rpx 30rpx;
-
-  .arrow-btn {
-    font-size: 40rpx;
-    color: #666;
-    padding: 0 30rpx;
-    font-weight: 300;
-  }
-
-  .current-month {
-    font-size: 32rpx;
-    font-weight: 600;
-    color: #333;
-    min-width: 200rpx;
-    text-align: center;
-  }
+  gap: 60rpx;
 }
 
 .week-header {
@@ -300,12 +245,12 @@ watch(() => props.modelValue, (val) => {
   grid-template-columns: repeat(7, 1fr);
   padding: 16rpx 20rpx;
   border-bottom: 1rpx solid #f5f5f5;
+}
 
-  .week-day {
-    text-align: center;
-    font-size: 26rpx;
-    color: #999;
-  }
+.week-header .week-day {
+  text-align: center;
+  font-size: 26rpx;
+  color: #999;
 }
 
 .days-grid {
@@ -313,51 +258,49 @@ watch(() => props.modelValue, (val) => {
   grid-template-columns: repeat(7, 1fr);
   padding: 16rpx 20rpx 30rpx;
   gap: 8rpx 0;
+}
 
-  .day-cell {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    margin: 4rpx;
+.days-grid .day-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin: 4rpx;
+}
 
-    .day-text {
-      font-size: 28rpx;
-      color: #333;
-    }
+.days-grid .day-cell .day-text {
+  font-size: 28rpx;
+  color: #333;
+}
 
-    &.other-month {
-      .day-text {
-        color: #ccc;
-      }
-    }
+.days-grid .day-cell.other-month .day-text {
+  color: #ccc;
+}
 
-    &.today {
-      background: #e8f5e9;
+.days-grid .day-cell.today {
+  background: #e8f5e9;
+}
 
-      .day-text {
-        color: #4CAF50;
-        font-weight: 500;
-      }
-    }
+.days-grid .day-cell.today .day-text {
+  color: #4CAF50;
+  font-weight: 500;
+}
 
-    &.selected {
-      background: #4CAF50;
+.days-grid .day-cell.selected {
+  background: #4CAF50;
+}
 
-      .day-text {
-        color: #fff;
-        font-weight: 500;
-      }
-    }
+.days-grid .day-cell.selected .day-text {
+  color: #fff;
+  font-weight: 500;
+}
 
-    &.disabled {
-      opacity: 0.3;
-    }
+.days-grid .day-cell.disabled {
+  opacity: 0.3;
+}
 
-    &:active:not(.disabled) {
-      background: #f0f0f0;
-    }
-  }
+.days-grid .day-cell:active:not(.disabled) {
+  background: #f0f0f0;
 }
 </style>

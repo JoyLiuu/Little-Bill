@@ -1,4 +1,12 @@
 {
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^u--(.*)": "uview-plus/components/u-$1/u-$1.vue",
+      "^up-(.*)": "uview-plus/components/u-$1/u-$1.vue",
+      "^u-([^-].*)": "uview-plus/components/u-$1/u-$1.vue"
+    }
+  },
   "pages": [
     {
       "path": "pages/index/index",
@@ -44,30 +52,40 @@
     "backgroundColor": "#F8F8F8"
   },
   "tabBar": {
-    "color": "#999999",
-    "selectedColor": "#4CAF50",
+    "color": "#7AADCC",
+    "selectedColor": "#3E8FD4",
     "borderStyle": "black",
     "backgroundColor": "#ffffff",
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "首页"
+        "text": "首页",
+        "iconPath": "static/tabbar/home.svg",
+        "selectedIconPath": "static/tabbar/home-active.svg"
       },
       {
         "pagePath": "pages/ledger/ledger",
-        "text": "记账本"
+        "text": "记账",
+        "iconPath": "static/tabbar/ledger.svg",
+        "selectedIconPath": "static/tabbar/ledger-active.svg"
       },
       {
         "pagePath": "pages/statistics/statistics",
-        "text": "统计"
+        "text": "统计",
+        "iconPath": "static/tabbar/chart.svg",
+        "selectedIconPath": "static/tabbar/chart-active.svg"
       },
       {
         "pagePath": "pages/funds/funds",
-        "text": "资金池"
+        "text": "资金",
+        "iconPath": "static/tabbar/funds.svg",
+        "selectedIconPath": "static/tabbar/funds-active.svg"
       },
       {
         "pagePath": "pages/profile/profile",
-        "text": "我的"
+        "text": "我的",
+        "iconPath": "static/tabbar/profile.svg",
+        "selectedIconPath": "static/tabbar/profile-active.svg"
       }
     ]
   },

@@ -29,11 +29,12 @@
             <view class="fund-title">
               <view class="color-dot" :style="{ backgroundColor: fund.color }"></view>
               <text class="name">{{ fund.name }}</text>
-              <text class="status" :class="fund.status">
-                {{ fund.status === 'active' ? '进行中' : '已完成' }}
-              </text>
+              <u-tag
+                :text="fund.status === 'active' ? '进行中' : '已完成'"
+                :type="fund.status === 'active' ? 'success' : 'warning'"
+                size="mini"
+              />
             </view>
-            <text class="deadline">截止: {{ formatDeadline(fund.deadline) }}</text>
           </view>
 
           <view class="fund-progress">
@@ -41,55 +42,65 @@
               <text class="current">¥{{ formatAmount(fund.currentAmount) }}</text>
               <text class="target">/ ¥{{ formatAmount(fund.targetAmount) }}</text>
             </view>
-            <view class="progress-bar">
-              <view
-                class="progress-fill"
-                :style="{ 
-                  width: Math.min((fund.currentAmount / fund.targetAmount) * 100, 100) + '%',
-                  backgroundColor: fund.color 
-                }"
-              ></view>
-            </view>
+            <u-line-progress
+              :percentage="Math.min(Math.round((fund.currentAmount / fund.targetAmount) * 100), 100)"
+              :active-color="fund.color"
+              height="12"
+              :show-percent="false"
+            />
             <view class="progress-detail">
-              <text class="percent">{{ Math.round((fund.currentAmount / fund.targetAmount) * 100) }}%</text>
-              <text class="remaining" v-if="fund.status === 'active'">
-                还需 ¥{{ formatAmount(Math.max(0, fund.targetAmount - fund.currentAmount)) }}
-              </text>
+              <u-text
+                :text="`${Math.round((fund.currentAmount / fund.targetAmount) * 100)}%`"
+                size="24"
+                :color="fund.color"
+                bold
+              />
+              <u-text
+                v-if="fund.status === 'active'"
+                :text="`还需 ¥${formatAmount(Math.max(0, fund.targetAmount - fund.currentAmount))}`"
+                size="24"
+                color="#999"
+              />
             </view>
           </view>
 
           <view class="fund-actions">
-            <button
-              class="btn-action deposit"
-              :style="{ backgroundColor: fund.color + '20', color: fund.color }"
+            <u-button
+              :text="'存入'"
+              size="small"
+              :color="fund.color"
+              shape="circle"
               @click="openOperationModal(fund, 'deposit')"
-            >
-              存入
-            </button>
-            <button
-              class="btn-action withdraw"
+            />
+            <u-button
+              :text="'取出'"
+              size="small"
+              type="info"
+              shape="circle"
               :disabled="fund.currentAmount <= 0"
               @click="openOperationModal(fund, 'withdraw')"
-            >
-              取出
-            </button>
+            />
           </view>
         </view>
       </view>
 
       <!-- 空状态 -->
       <view class="empty-state" v-else>
-        <text class="empty-icon">🏦</text>
-        <text class="empty-text">还没有资金池</text>
-        <text class="empty-tip">点击下方按钮创建第一个资金池</text>
+        <u-icon name="rmb-circle" size="100" color="#ccc"></u-icon>
+        <u-text text="还没有资金池" size="20" color="#666" bold class="mt-4"></u-text>
+        <u-text text="点击下方按钮创建第一个资金池" size="26" color="#999" class="mt-2"></u-text>
       </view>
     </scroll-view>
 
     <!-- 新建按钮 -->
-    <view class="create-btn" @click="showFundModal = true">
-      <text class="icon">+</text>
-      <text>新建资金池</text>
-    </view>
+    <u-button
+      :text="'新建资金池'"
+      size="large"
+      color="linear-gradient(135deg, #4CAF50 0%, #45a049 100%)"
+      shape="circle"
+      :customStyle="createBtnStyle"
+      @click="showFundModal = true"
+    />
 
     <!-- 资金池弹窗 -->
     <FundModal
@@ -135,11 +146,15 @@ const fundStats = computed(() => {
   return { total, active, completed }
 })
 
-// 方法
-const formatDeadline = (deadline: string) => {
-  const [year, month] = deadline.split('-')
-  return `${year}年${parseInt(month)}月`
+const createBtnStyle = {
+  position: 'fixed',
+  left: '32rpx',
+  right: '32rpx',
+  bottom: 'calc(40rpx + env(safe-area-inset-bottom))',
+  boxShadow: '0 8rpx 24rpx rgba(76, 175, 80, 0.3)'
 }
+
+
 
 const openOperationModal = (fund: FundPool, type: 'deposit' | 'withdraw') => {
   selectedFund.value = fund
@@ -267,29 +282,6 @@ onMounted(() => {
             color: #333;
             margin-right: 12rpx;
           }
-
-          .status {
-            font-size: 20rpx;
-            padding: 4rpx 12rpx;
-            border-radius: 8rpx;
-            background: #f0f0f0;
-            color: #999;
-
-            &.active {
-              background: #e8f5e9;
-              color: #4CAF50;
-            }
-
-            &.completed {
-              background: #fff3e0;
-              color: #ff9800;
-            }
-          }
-        }
-
-        .deadline {
-          font-size: 24rpx;
-          color: #999;
         }
       }
 
@@ -311,126 +303,22 @@ onMounted(() => {
           }
         }
 
-        .progress-bar {
-          height: 12rpx;
-          background: #f0f0f0;
-          border-radius: 6rpx;
-          overflow: hidden;
-          margin-bottom: 12rpx;
-
-          .progress-fill {
-            height: 100%;
-            border-radius: 6rpx;
-            transition: width 0.3s;
-          }
-        }
-
         .progress-detail {
           display: flex;
           justify-content: space-between;
-
-          .percent {
-            font-size: 24rpx;
-            color: #4CAF50;
-            font-weight: 500;
-          }
-
-          .remaining {
-            font-size: 24rpx;
-            color: #999;
-          }
+          margin-top: 12rpx;
         }
       }
 
       .fund-actions {
         display: flex;
         gap: 20rpx;
-
-        .btn-action {
-          flex: 1;
-          height: 72rpx;
-          border-radius: 36rpx;
-          font-size: 28rpx;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: none;
-
-          &.deposit {
-            &:active {
-              opacity: 0.8;
-            }
-          }
-
-          &.withdraw {
-            background: #f5f5f5;
-            color: #666;
-
-            &:active {
-              background: #e0e0e0;
-            }
-
-            &[disabled] {
-              opacity: 0.5;
-            }
-          }
-        }
       }
     }
 
     .empty-state {
       text-align: center;
       padding: 120rpx 40rpx;
-
-      .empty-icon {
-        display: block;
-        font-size: 100rpx;
-        margin-bottom: 24rpx;
-      }
-
-      .empty-text {
-        display: block;
-        font-size: 32rpx;
-        color: #666;
-        margin-bottom: 12rpx;
-      }
-
-      .empty-tip {
-        display: block;
-        font-size: 26rpx;
-        color: #999;
-      }
-    }
-  }
-
-  .create-btn {
-    position: fixed;
-    left: 32rpx;
-    right: 32rpx;
-    bottom: calc(40rpx + env(safe-area-inset-bottom));
-    height: 88rpx;
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-    border-radius: 44rpx;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 8rpx 24rpx rgba(76, 175, 80, 0.3);
-
-    &:active {
-      opacity: 0.9;
-    }
-
-    .icon {
-      font-size: 40rpx;
-      color: #fff;
-      margin-right: 12rpx;
-      font-weight: 300;
-    }
-
-    text {
-      font-size: 32rpx;
-      color: #fff;
-      font-weight: 500;
     }
   }
 }

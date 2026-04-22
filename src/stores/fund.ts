@@ -10,22 +10,25 @@ export const useFundStore = defineStore('fund', () => {
   const fundPools = ref<FundPool[]>([])
   const fundOperations = ref<FundOperation[]>([])
 
+  // 安全获取资金池数组
+  const safePools = computed(() => Array.isArray(fundPools.value) ? fundPools.value : [])
+
   // Getters
   const allFunds = computed(() => {
-    return fundPools.value.sort((a, b) => b.createTime - a.createTime)
+    return safePools.value.sort((a, b) => b.createTime - a.createTime)
   })
 
   const activeFunds = computed(() => {
-    return fundPools.value.filter(f => f.status === 'active')
+    return safePools.value.filter(f => f.status === 'active')
   })
 
   const completedFunds = computed(() => {
-    return fundPools.value.filter(f => f.status === 'completed')
+    return safePools.value.filter(f => f.status === 'completed')
   })
 
   // 资金池总投入
   const totalInvested = computed(() => {
-    return fundPools.value.reduce((sum, f) => sum + f.currentAmount, 0)
+    return safePools.value.reduce((sum, f) => sum + f.currentAmount, 0)
   })
 
   // 年度资金池存入总额
@@ -49,8 +52,9 @@ export const useFundStore = defineStore('fund', () => {
   const initFunds = () => {
     const storedFunds = storage.get<FundPool[]>(STORAGE_KEYS.FUND_POOLS, [])
     const storedOps = storage.get<FundOperation[]>(STORAGE_KEYS.FUND_OPERATIONS, [])
-    fundPools.value = storedFunds
-    fundOperations.value = storedOps
+    // 确保数据是数组类型
+    fundPools.value = Array.isArray(storedFunds) ? storedFunds : []
+    fundOperations.value = Array.isArray(storedOps) ? storedOps : []
   }
 
   const addFund = (data: Omit<FundPool, 'id' | 'currentAmount' | 'status' | 'createTime'>): FundPool => {

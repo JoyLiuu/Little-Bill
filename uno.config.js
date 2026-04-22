@@ -7,17 +7,35 @@ export default defineConfig({
     presetUno(),
     presetAttributify(),
   ],
-  // 小程序适配配置
+  // 小程序适配配置 - 莫兰迪色系
   theme: {
     colors: {
       primary: {
-        DEFAULT: '#4CAF50',
-        light: '#81C784',
-        dark: '#388E3C',
+        DEFAULT: '#B8A9C9', // 莫兰迪灰紫
+        light: '#D4C5E2',   // 浅灰紫
+        dark: '#9B8AA5',    // 深灰紫
       },
-      danger: '#ff5252',
-      warning: '#ffb74d',
-      info: '#64b5f6',
+      secondary: {
+        DEFAULT: '#E8E3E9', // 莫兰迪灰粉背景
+        light: '#F5F0F0',   // 极浅灰
+        dark: '#C4B5C0',    // 中灰紫
+      },
+      danger: '#D4A5A5',    // 莫兰迪灰红
+      warning: '#D4C4A8',   // 莫兰迪米黄
+      info: '#A5B8C4',      // 莫兰迪灰蓝
+      accent: {
+        DEFAULT: '#C9B8A9', // 莫兰迪米棕
+        light: '#D9CFC4',
+        dark: '#A89888',
+      },
+      morandi: {
+        sage: '#B5C4B1',      // 鼠尾草绿
+        rose: '#D4A5A5',      // 灰玫瑰
+        blue: '#A5B8C4',      // 灰蓝
+        beige: '#D9CFC4',     // 米灰
+        lavender: '#C4B5D4',  // 薰衣草灰
+        sand: '#C9B8A9',      // 沙色
+      }
     },
   },
   // 安全列表，确保这些类被生成

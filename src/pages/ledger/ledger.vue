@@ -1,7 +1,7 @@
 <template>
   <view class="min-h-screen bg-gray-100 flex flex-col">
     <!-- 顶部月份选择器 -->
-    <view class="px-4 pt-12 pb-6" style="background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);">
+    <view class="px-4 pt-12 pb-6" style="background: linear-gradient(135deg, #3E8FD4 0%, #2E6FA8 100%);">
       <view class="flex items-center justify-center mb-6">
         <text class="px-8 font-light" style="font-size: 48rpx; color: rgba(255,255,255,0.8);" @click="changeMonth(-1)">‹</text>
         <view class="text-center">
@@ -47,8 +47,7 @@
               :key="record.id"
               class="flex items-center px-4 py-3 active:bg-gray-50"
               :class="index < group.records.length - 1 ? 'border-b border-gray-100' : ''"
-              @touchstart="touchStart($event, record)"
-              @touchend="touchEnd"
+              @longpress="onLongPress(record)"
               @click="onRecordClick(record)"
             >
               <view
@@ -90,41 +89,20 @@
     <!-- 悬浮记账按钮 -->
     <view 
       class="fixed rounded-full flex items-center justify-center z-50"
-      style="right: 48rpx; bottom: 180rpx; width: 96rpx; height: 96rpx; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); box-shadow: 0 8rpx 24rpx rgba(76, 175, 80, 0.4);"
+      style="right: 48rpx; bottom: 180rpx; width: 96rpx; height: 96rpx; background: linear-gradient(135deg, #3E8FD4 0%, #2E6FA8 100%); box-shadow: 0 8rpx 24rpx rgba(184, 169, 201, 0.3);"
       @click="showRecordModal = true"
     >
       <text class="font-light" style="font-size: 48rpx; color: #fff;">+</text>
     </view>
 
     <!-- 操作菜单 -->
-    <view 
-      v-if="showActionSheet" 
-      class="fixed inset-0 bg-black/50 z-50 flex items-end"
-      @click="showActionSheet = false"
-    >
-      <view class="w-full bg-white rounded-t-3xl p-4 pb-safe" @click.stop>
-        <view 
-          class="flex items-center justify-center py-4 text-lg border-b border-gray-100 active:bg-gray-50"
-          @click="editRecord"
-        >
-          <text class="mr-2">✏️</text>
-          <text>编辑</text>
-        </view>
-        <view 
-          class="flex items-center justify-center py-4 text-lg text-danger border-b border-gray-100 active:bg-gray-50"
-          @click="deleteRecord"
-        >
-          <text class="mr-2">🗑️</text>
-          <text>删除</text>
-        </view>
-        <view 
-          class="flex items-center justify-center py-4 text-lg text-gray-600 mt-2 active:bg-gray-50"
-          @click="showActionSheet = false"
-        >
-          <text>取消</text>
-        </view>
-      </view>
-    </view>
+    <u-action-sheet
+      :show="showActionSheet"
+      :actions="actionList"
+      title="选择操作"
+      @close="showActionSheet = false"
+      @select="onActionSelect"
+    />
 
     <!-- 记账弹窗 -->
     <RecordModal
@@ -154,8 +132,11 @@ const showActionSheet = ref(false)
 const editingRecord = ref<Record | null>(null)
 const selectedRecord = ref<Record | null>(null)
 
-// 触摸相关
-let touchTimer: any = null
+// 操作菜单列表
+const actionList = [
+  { name: '编辑', color: '#333' },
+  { name: '删除', color: '#ff5252' }
+]
 
 // 计算属性
 const monthRecords = computed(() => {
@@ -190,33 +171,17 @@ const groupedRecords = computed(() => {
 
 // 方法
 const changeMonth = (delta: number) => {
-  let newMonth = currentMonth.value + delta
-  let newYear = currentYear.value
-
-  if (newMonth > 12) {
-    newMonth = 1
-    newYear++
-  } else if (newMonth < 1) {
-    newMonth = 12
-    newYear--
-  }
-
-  currentMonth.value = newMonth
-  currentYear.value = newYear
+  const newDate = new Date(currentYear.value, currentMonth.value - 1 + delta, 1)
+  currentYear.value = newDate.getFullYear()
+  currentMonth.value = newDate.getMonth() + 1
 }
 
 const formatDay = (dateStr: string) => {
   const date = dayjs(dateStr)
   const today = dayjs()
-  
-  if (date.isSame(today, 'day')) {
-    return '今天'
-  }
-  
-  if (date.isSame(today.subtract(1, 'day'), 'day')) {
-    return '昨天'
-  }
-  
+
+  if (date.isSame(today, 'day')) return '今天'
+  if (date.isSame(today.subtract(1, 'day'), 'day')) return '昨天'
   return date.format('M月D日')
 }
 
@@ -225,50 +190,37 @@ const formatWeek = (dateStr: string) => {
   return weekDays[dayjs(dateStr).day()]
 }
 
-const touchStart = (e: any, record: Record) => {
-  touchTimer = setTimeout(() => {
-    selectedRecord.value = record
-    showActionSheet.value = true
-  }, 500)
-}
-
-const touchEnd = () => {
-  if (touchTimer) {
-    clearTimeout(touchTimer)
-    touchTimer = null
-  }
+const onLongPress = (record: Record) => {
+  selectedRecord.value = record
+  showActionSheet.value = true
 }
 
 const onRecordClick = (record: Record) => {
-  if (touchTimer) {
-    clearTimeout(touchTimer)
-    touchTimer = null
-  }
+  // 点击记录可以查看详情或编辑
 }
 
-const editRecord = () => {
-  if (selectedRecord.value) {
-    editingRecord.value = selectedRecord.value
-    showRecordModal.value = true
-    showActionSheet.value = false
+const onActionSelect = (action: any) => {
+  if (action.name === '编辑') {
+    if (selectedRecord.value) {
+      editingRecord.value = selectedRecord.value
+      showRecordModal.value = true
+    }
+  } else if (action.name === '删除') {
+    if (selectedRecord.value) {
+      uni.showModal({
+        title: '确认删除',
+        content: '确定要删除这条记录吗？',
+        success: (res) => {
+          if (res.confirm) {
+            recordStore.deleteRecord(selectedRecord.value!.id)
+            uni.showToast({ title: '删除成功', icon: 'success' })
+          }
+          selectedRecord.value = null
+        },
+      })
+    }
   }
-}
-
-const deleteRecord = () => {
-  if (selectedRecord.value) {
-    uni.showModal({
-      title: '确认删除',
-      content: '确定要删除这条记录吗？',
-      success: (res) => {
-        if (res.confirm) {
-          recordStore.deleteRecord(selectedRecord.value!.id)
-          uni.showToast({ title: '删除成功', icon: 'success' })
-        }
-        showActionSheet.value = false
-        selectedRecord.value = null
-      },
-    })
-  }
+  showActionSheet.value = false
 }
 
 const onSaveRecord = (data: any) => {

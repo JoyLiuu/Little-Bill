@@ -1,7 +1,7 @@
 <template>
   <view class="min-h-screen bg-gray-100 pb-4">
     <!-- 顶部切换标签 -->
-    <view class="bg-gradient-to-br from-primary to-primary-dark px-4 pt-12 pb-6">
+    <view class="px-4 pt-12 pb-6" style="background: linear-gradient(135deg, #3E8FD4 0%, #2E6FA8 100%);">
       <view class="flex justify-center mb-6">
         <view
           class="px-10 py-2 text-base relative"
@@ -23,26 +23,13 @@
       
       <!-- 年月选择器 -->
       <view class="flex items-center justify-center mb-6">
-        <text class="text-3xl text-white/80 px-6" @click="changeDate(-1)">‹</text>
-        <picker
-          v-if="viewType === 'month'"
-          mode="date"
-          fields="month"
-          :value="`${currentYear}-${String(currentMonth).padStart(2, '0')}`"
-          @change="onMonthChange"
-        >
-          <text class="text-3xl text-white font-medium">{{ currentYear }}年{{ currentMonth }}月</text>
-        </picker>
-        <picker
-          v-else
-          mode="date"
-          fields="year"
-          :value="String(currentYear)"
-          @change="onYearChange"
-        >
-          <text class="text-3xl text-white font-medium">{{ currentYear }}年</text>
-        </picker>
-        <text class="text-3xl text-white/80 px-6" @click="changeDate(1)">›</text>
+        <text class="px-6 font-light" style="font-size: 48rpx; color: rgba(255,255,255,0.8);" @click="changeDate(-1)">‹</text>
+        <view class="text-center" @click="showDatePicker = true">
+          <text class="font-medium" style="font-size: 48rpx; color: #fff;">
+            {{ viewType === 'month' ? currentYear + '年' + currentMonth + '月' : currentYear + '年' }}
+          </text>
+        </view>
+        <text class="px-6 font-light" style="font-size: 48rpx; color: rgba(255,255,255,0.8);" @click="changeDate(1)">›</text>
       </view>
       
       <!-- 总支出 -->
@@ -67,24 +54,22 @@
       
       <!-- 饼图 -->
       <view class="flex justify-center mb-6">
-        <view v-if="categoryStats.length > 0" class="relative w-56 h-56 rounded-full overflow-hidden">
-          <view
-            v-for="(item, index) in categoryStats"
-            :key="item.categoryId"
-            class="absolute inset-0"
-            :style="getPieSegmentStyle(index)"
+        <view v-if="categoryStats.length > 0" class="relative" style="width: 224rpx; height: 224rpx;">
+          <!-- 使用 conic-gradient 实现饼图 -->
+          <view 
+            class="w-full h-full rounded-full"
+            :style="pieChartStyle"
+          ></view>
+          <!-- 中心白色圆 -->
+          <view 
+            class="absolute bg-white rounded-full flex flex-col items-center justify-center"
+            style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 140rpx; height: 140rpx;"
           >
-            <view
-              class="w-full h-full"
-              :style="{ backgroundColor: item.categoryColor }"
-            ></view>
-          </view>
-          <view class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-white rounded-full flex flex-col items-center justify-center">
-            <text class="text-4xl font-bold text-gray-800">{{ categoryStats.length }}</text>
+            <text class="font-bold text-gray-800" style="font-size: 48rpx;">{{ categoryStats.length }}</text>
             <text class="text-xs text-gray-400">分类</text>
           </view>
         </view>
-        <view v-else class="w-56 h-56 flex items-center justify-center text-gray-400">
+        <view v-else class="flex items-center justify-center text-gray-400" style="width: 224rpx; height: 224rpx;">
           <text>暂无数据</text>
         </view>
       </view>
@@ -131,32 +116,37 @@
       <text class="text-lg font-semibold text-gray-800 mb-5 block">{{ viewType === 'month' ? '每日趋势' : '月度趋势' }}</text>
       
       <view class="relative">
-        <!-- 柱状图/折线图 -->
-        <view v-if="trendData.length > 0" class="flex items-end justify-around h-64 py-4">
-          <view
-            v-for="(item, index) in trendData"
-            :key="index"
-            class="flex flex-col items-center flex-1 max-w-12"
-            :style="{ height: getChartHeight(item.value) }"
-          >
-            <view 
-              class="w-full min-h-1 rounded-t-lg relative transition-all"
-              :class="item.value > averageValue ? 'bg-primary' : 'bg-gray-200'"
+        <!-- 柱状图 -->
+        <scroll-view v-if="trendData.length > 0" scroll-x class="py-4" style="height: 400rpx; white-space: nowrap;">
+          <view class="flex items-end" style="height: 340rpx; padding: 0 20rpx;">
+            <view
+              v-for="(item, index) in trendData"
+              :key="index"
+              class="flex flex-col items-center"
+              style="width: 60rpx; height: 100%; margin: 0 8rpx; display: inline-flex;"
             >
-              <text v-if="item.value > 0" class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-600 whitespace-nowrap">
-                {{ formatShortAmount(item.value) }}
-              </text>
+              <view 
+                class="w-full rounded-t-lg relative transition-all"
+                :class="item.value > averageValue ? 'bg-primary' : 'bg-gray-200'"
+                :style="{ height: getChartHeight(item.value) }"
+              >
+                <text v-if="item.value > 0" class="absolute -top-8 left-1/2 -translate-x-1/2 text-xs text-gray-600 whitespace-nowrap">
+                  {{ formatShortAmount(item.value) }}
+                </text>
+              </view>
+              <text class="text-xs text-gray-400 mt-2">{{ item.label }}</text>
             </view>
-            <text class="text-xs text-gray-400 mt-2">{{ item.label }}</text>
           </view>
-        </view>
-        <view v-else class="h-64 flex items-center justify-center text-gray-400">
+        </scroll-view>
+        <view v-else class="flex items-center justify-center text-gray-400" style="height: 400rpx;">
           <text>暂无数据</text>
         </view>
         
         <!-- 平均线 -->
-        <view v-if="trendData.length > 0" class="absolute left-0 right-0 border-t-2 border-dashed border-warning pt-1">
-          <text class="text-xs text-warning">平均: ¥{{ formatAmount(averageValue) }}</text>
+        <view v-if="trendData.length > 0" class="absolute left-4 right-4 flex items-center" :style="{ top: (100 - (averageValue / Math.max(...trendData.map(d => d.value), averageValue) * 100)) * 3.4 + 'rpx' }">
+          <view class="flex-1 border-t-2 border-dashed" style="border-color: #D4C4A8;"></view>
+          <text class="text-xs mx-2" style="color: #D4C4A8;">平均 ¥{{ formatAmount(averageValue) }}</text>
+          <view class="flex-1 border-t-2 border-dashed" style="border-color: #D4C4A8;"></view>
         </view>
       </view>
     </view>
@@ -174,6 +164,7 @@ const recordStore = useRecordStore()
 const viewType = ref<'month' | 'year'>('month')
 const currentYear = ref(new Date().getFullYear())
 const currentMonth = ref(new Date().getMonth() + 1)
+const showDatePicker = ref(false)
 
 // 计算属性
 const categoryStats = computed(() => {
@@ -216,6 +207,29 @@ const averageValue = computed(() => {
   return total / trendData.value.filter(item => item.value > 0).length || 1
 })
 
+// 饼图样式 - 使用 conic-gradient
+const pieChartStyle = computed(() => {
+  if (categoryStats.value.length === 0) return {}
+  
+  const total = categoryStats.value.reduce((sum, item) => sum + item.amount, 0)
+  let currentAngle = 0
+  const gradientParts: string[] = []
+  
+  categoryStats.value.forEach(item => {
+    const percentage = item.amount / total
+    const angle = percentage * 360
+    const startAngle = currentAngle
+    const endAngle = currentAngle + angle
+    
+    gradientParts.push(`${item.categoryColor} ${startAngle}deg ${endAngle}deg`)
+    currentAngle = endAngle
+  })
+  
+  return {
+    background: `conic-gradient(${gradientParts.join(', ')})`
+  }
+})
+
 // 方法
 const switchView = (type: 'month' | 'year') => {
   viewType.value = type
@@ -223,47 +237,11 @@ const switchView = (type: 'month' | 'year') => {
 
 const changeDate = (delta: number) => {
   if (viewType.value === 'month') {
-    let newMonth = currentMonth.value + delta
-    let newYear = currentYear.value
-    
-    if (newMonth > 12) {
-      newMonth = 1
-      newYear++
-    } else if (newMonth < 1) {
-      newMonth = 12
-      newYear--
-    }
-    
-    currentMonth.value = newMonth
-    currentYear.value = newYear
+    const newDate = new Date(currentYear.value, currentMonth.value - 1 + delta, 1)
+    currentYear.value = newDate.getFullYear()
+    currentMonth.value = newDate.getMonth() + 1
   } else {
     currentYear.value += delta
-  }
-}
-
-const onMonthChange = (e: any) => {
-  const [year, month] = e.detail.value.split('-')
-  currentYear.value = parseInt(year)
-  currentMonth.value = parseInt(month)
-}
-
-const onYearChange = (e: any) => {
-  currentYear.value = parseInt(e.detail.value)
-}
-
-const getPieSegmentStyle = (index: number) => {
-  const total = categoryStats.value.reduce((sum, item) => sum + item.percentage, 0)
-  let startAngle = 0
-  
-  for (let i = 0; i < index; i++) {
-    startAngle += (categoryStats.value[i].percentage / total) * 360
-  }
-  
-  const angle = (categoryStats.value[index].percentage / total) * 360
-  
-  return {
-    transform: `rotate(${startAngle}deg)`,
-    clipPath: `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.sin(angle * Math.PI / 180)}% ${50 - 50 * Math.cos(angle * Math.PI / 180)}%)`,
   }
 }
 

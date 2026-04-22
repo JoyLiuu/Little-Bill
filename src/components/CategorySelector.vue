@@ -1,39 +1,34 @@
 <template>
   <view class="category-selector">
-    <view class="type-tabs">
-      <view
-        class="tab"
-        :class="{ active: currentType === 'expense' }"
-        @click="switchType('expense')"
-      >
-        支出
-      </view>
-      <view
-        class="tab"
-        :class="{ active: currentType === 'income' }"
-        @click="switchType('income')"
-      >
-        收入
-      </view>
-    </view>
+    <u-tabs
+      :list="typeList"
+      :current="currentIndex"
+      :activeStyle="{ color: '#3E8FD4', fontWeight: 'bold' }"
+      :inactiveStyle="{ color: '#666' }"
+      lineColor="#3E8FD4"
+      @change="switchType"
+    />
     
-    <view class="category-grid">
-      <view
+    <u-grid :col="4" :border="false" class="category-grid">
+      <u-grid-item
         v-for="category in currentCategories"
         :key="category.id"
-        class="category-item"
-        :class="{ active: modelValue === category.id }"
         @click="selectCategory(category)"
       >
         <view
-          class="icon"
-          :style="{ backgroundColor: category.color + '20', color: category.color }"
+          class="category-item"
+          :class="{ active: modelValue === category.id }"
         >
-          <text class="iconfont">{{ category.icon }}</text>
+          <view
+            class="icon"
+            :style="{ backgroundColor: category.color + '20' }"
+          >
+            <u-icon :name="category.icon" size="20" :color="category.color"></u-icon>
+          </view>
+          <text class="name">{{ category.name }}</text>
         </view>
-        <text class="name">{{ category.name }}</text>
-      </view>
-    </view>
+      </u-grid-item>
+    </u-grid>
   </view>
 </template>
 
@@ -55,6 +50,15 @@ const emit = defineEmits<{
 
 const currentType = ref<'expense' | 'income'>(props.type || 'expense')
 
+const typeList = [
+  { name: '支出', value: 'expense' },
+  { name: '收入', value: 'income' }
+]
+
+const currentIndex = computed(() => {
+  return currentType.value === 'expense' ? 0 : 1
+})
+
 watch(() => props.type, (val) => {
   if (val) {
     currentType.value = val
@@ -65,7 +69,8 @@ const currentCategories = computed(() => {
   return currentType.value === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES
 })
 
-const switchType = (type: 'expense' | 'income') => {
+const switchType = (item: any) => {
+  const type = item.value as 'expense' | 'income'
   currentType.value = type
   emit('update:type', type)
   emit('update:modelValue', '')
@@ -79,54 +84,19 @@ const selectCategory = (category: Category) => {
 
 <style lang="scss" scoped>
 .category-selector {
-  .type-tabs {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 32rpx;
-    
-    .tab {
-      padding: 16rpx 48rpx;
-      font-size: 28rpx;
-      color: #666;
-      position: relative;
-      
-      &.active {
-        color: #4CAF50;
-        font-weight: 500;
-        
-        &::after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 40rpx;
-          height: 4rpx;
-          background: #4CAF50;
-          border-radius: 2rpx;
-        }
-      }
-    }
-  }
-  
   .category-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24rpx;
+    margin-top: 24rpx;
     
     .category-item {
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 16rpx;
-      border-radius: 12rpx;
-      transition: all 0.2s;
       
       &.active {
-        background: #f0f8f0;
-        
         .icon {
           transform: scale(1.1);
+          background: #F0E8F0 !important;
         }
       }
       
@@ -139,10 +109,6 @@ const selectCategory = (category: Category) => {
         justify-content: center;
         margin-bottom: 12rpx;
         transition: transform 0.2s;
-        
-        .iconfont {
-          font-size: 40rpx;
-        }
       }
       
       .name {

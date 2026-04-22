@@ -1,21 +1,19 @@
 // 格式化工具函数
 
+// 解析金额为数字
+function parseAmount(amount: number | string | undefined | null): number {
+  const num = Number(amount)
+  return isNaN(num) ? 0 : num
+}
+
 // 格式化金额
 export function formatAmount(amount: number | string | undefined | null): string {
-  // 将输入转换为数字
-  const num = Number(amount)
-  // 如果不是有效数字，返回 0.00
-  if (isNaN(num)) return '0.00'
-  return num.toFixed(2)
+  return parseAmount(amount).toFixed(2)
 }
 
 // 格式化金额（带千分位）
 export function formatAmountWithComma(amount: number | string | undefined | null): string {
-  // 将输入转换为数字
-  const num = Number(amount)
-  // 如果不是有效数字，返回 0.00
-  if (isNaN(num)) return '0.00'
-  return num.toLocaleString('zh-CN', {
+  return parseAmount(amount).toLocaleString('zh-CN', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })

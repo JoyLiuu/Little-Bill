@@ -1,35 +1,63 @@
-// 支出分类
+// 主题色配置
+export const THEME_COLORS = {
+  // 背景色
+  headerBg: '#EAF4FD',
+  subBg: '#F2F9FE',
+  navBarBg: '#F7FBFE',
+
+  // 主色
+  primary: '#3E8FD4',
+  primaryLight: '#C5DFF5',
+
+  // 边框/分割线
+  cardBorder: '#D6EAFA',
+  rowDivider: '#EDF4FB',
+
+  // 文字
+  primaryText: '#0C3D6B',
+  listItemText: '#1C3A5A',
+  secondaryText: '#4D85B8',
+  hintText: '#7AADCC',
+
+  // 功能色
+  expenseRed: '#D94F3A',
+  incomeGreen: '#1A8F68',
+  iconBg: '#E6F1FB',
+  incomeIconBg: '#EBF6F0',
+}
+
+// 支出分类 - 使用新配色
 export const EXPENSE_CATEGORIES = [
-  { id: 'food', name: '餐饮', icon: '\ue600', color: '#FF6B6B', type: 'expense' as const },
-  { id: 'shopping', name: '购物', icon: '\ue601', color: '#4ECDC4', type: 'expense' as const },
-  { id: 'transport', name: '交通', icon: '\ue602', color: '#45B7D1', type: 'expense' as const },
-  { id: 'entertainment', name: '娱乐', icon: '\ue603', color: '#96CEB4', type: 'expense' as const },
-  { id: 'medical', name: '医疗', icon: '\ue604', color: '#FFEAA7', type: 'expense' as const },
-  { id: 'housing', name: '居住', icon: '\ue605', color: '#DDA0DD', type: 'expense' as const },
-  { id: 'education', name: '教育', icon: '\ue606', color: '#98D8C8', type: 'expense' as const },
-  { id: 'other', name: '其他', icon: '\ue607', color: '#F7DC6F', type: 'expense' as const },
+  { id: 'food', name: '餐饮', icon: 'bag-fill', color: '#3E8FD4', type: 'expense' as const },
+  { id: 'shopping', name: '购物', icon: 'shopping-cart-fill', color: '#4D85B8', type: 'expense' as const },
+  { id: 'transport', name: '交通', icon: 'car-fill', color: '#5A9BD5', type: 'expense' as const },
+  { id: 'entertainment', name: '娱乐', icon: 'play-circle-fill', color: '#6BA3D6', type: 'expense' as const },
+  { id: 'medical', name: '医疗', icon: 'heart-fill', color: '#7AADCC', type: 'expense' as const },
+  { id: 'housing', name: '居住', icon: 'home-fill', color: '#8BB8D4', type: 'expense' as const },
+  { id: 'education', name: '教育', icon: 'file-text-fill', color: '#9CC3DA', type: 'expense' as const },
+  { id: 'other', name: '其他', icon: 'grid-fill', color: '#0C3D6B', type: 'expense' as const },
 ]
 
-// 收入分类
+// 收入分类 - 使用新配色
 export const INCOME_CATEGORIES = [
-  { id: 'salary', name: '工资', icon: '\ue608', color: '#4CAF50', type: 'income' as const },
-  { id: 'bonus', name: '奖金', icon: '\ue609', color: '#8BC34A', type: 'income' as const },
-  { id: 'investment', name: '理财', icon: '\ue60a', color: '#CDDC39', type: 'income' as const },
-  { id: 'parttime', name: '兼职', icon: '\ue60b', color: '#FFC107', type: 'income' as const },
-  { id: 'other_income', name: '其他', icon: '\ue60c', color: '#FF9800', type: 'income' as const },
+  { id: 'salary', name: '工资', icon: 'rmb-circle-fill', color: '#1A8F68', type: 'income' as const },
+  { id: 'bonus', name: '奖金', icon: 'gift-fill', color: '#2A9F78', type: 'income' as const },
+  { id: 'investment', name: '理财', icon: 'coupon-fill', color: '#3AAF88', type: 'income' as const },
+  { id: 'parttime', name: '兼职', icon: 'account-fill', color: '#4ABF98', type: 'income' as const },
+  { id: 'other_income', name: '其他', icon: 'plus-circle-fill', color: '#5ACFA8', type: 'income' as const },
 ]
 
 // 所有分类
 export const ALL_CATEGORIES = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES]
 
-// 资金池颜色选项
+// 资金池颜色选项 - 蓝色系
 export const FUND_COLORS = [
-  '#FF6B6B',
-  '#4ECDC4',
-  '#45B7D1',
-  '#96CEB4',
-  '#FFEAA7',
-  '#DDA0DD',
+  '#3E8FD4',
+  '#4D85B8',
+  '#5A9BD5',
+  '#6BA3D6',
+  '#7AADCC',
+  '#8BB8D4',
 ]
 
 // 存储键名

@@ -1,113 +1,97 @@
 <template>
-  <view class="record-modal" v-if="visible" @click="closeOnOverlay && close()">
-    <view class="modal-content" @click.stop>
+  <u-popup
+    :show="visible"
+    mode="center"
+    :round="24"
+    @close="close"
+    bgColor="#fff"
+    :zIndex="1000"
+    :customStyle="{ width: '85%' }"
+  >
+    <view class="modal-container">
+      <!-- 头部 -->
       <view class="modal-header">
-        <text class="title">{{ isEdit ? '编辑记录' : '记一笔' }}</text>
-        <text class="close-btn" @click="close">×</text>
+        <text class="modal-title">{{ isEdit ? '编辑记录' : '记一笔' }}</text>
+        <u-icon name="close" size="24" color="#999" @click="close"></u-icon>
       </view>
-      
-      <scroll-view class="modal-body" scroll-y>
+
+      <scroll-view scroll-y class="modal-body">
         <!-- 金额输入 -->
-        <AmountInput
-          v-model="form.amount"
-          placeholder="0.00"
-          :focus="true"
-        />
-        
-        <!-- 类型切换 -->
-        <view class="type-tabs">
-          <view
-            class="tab"
-            :class="{ active: form.type === 'expense' }"
-            @click="switchType('expense')"
-          >
-            支出
-          </view>
-          <view
-            class="tab"
-            :class="{ active: form.type === 'income' }"
-            @click="switchType('income')"
-          >
-            收入
-          </view>
+        <view class="amount-section">
+          <text class="currency">¥</text>
+          <input
+            v-model="amountInput"
+            type="digit"
+            placeholder="0.00"
+            class="amount-input"
+            focus
+          />
         </view>
-        
+
         <!-- 分类选择 -->
         <view class="section">
           <text class="section-title">选择分类</text>
           <view class="category-grid">
             <view
-              v-for="category in currentCategories"
+              v-for="category in EXPENSE_CATEGORIES"
               :key="category.id"
               class="category-item"
-              :class="{ active: form.categoryId === category.id }"
               @click="selectCategory(category)"
             >
               <view
-                class="icon"
-                :style="{ backgroundColor: category.color + '20', color: category.color }"
+                class="category-icon"
+                :class="{ active: form.categoryId === category.id }"
+                :style="{ backgroundColor: form.categoryId === category.id ? category.color : category.color + '20' }"
               >
-                <text class="iconfont">{{ category.icon }}</text>
+                <u-icon :name="category.icon" size="20" :color="form.categoryId === category.id ? '#fff' : category.color"></u-icon>
               </view>
-              <text class="name">{{ category.name }}</text>
+              <text
+                class="category-name"
+                :class="{ active: form.categoryId === category.id }"
+              >{{ category.name }}</text>
             </view>
           </view>
         </view>
-        
+
         <!-- 日期选择 -->
-        <view class="section">
+        <view class="section date-section">
           <text class="section-title">日期</text>
           <DatePicker v-model="form.date" />
         </view>
-        
+
         <!-- 备注 -->
-        <view class="section">
+        <view class="section remark-section">
           <text class="section-title">备注</text>
-          <textarea
-            class="remark-input"
+          <u-textarea
             v-model="form.remark"
             placeholder="添加备注（选填）"
             maxlength="100"
+            height="60"
+            border="surround"
+            :customStyle="{ backgroundColor: '#f5f5f5', width: '100%' }"
           />
         </view>
-        
-        <!-- 图片上传 -->
-        <view class="section">
-          <text class="section-title">图片（最多3张）</text>
-          <view class="image-list">
-            <view
-              v-for="(img, index) in form.images"
-              :key="index"
-              class="image-item"
-            >
-              <image :src="img" mode="aspectFill" />
-              <text class="delete-btn" @click="removeImage(index)">×</text>
-            </view>
-            <view
-              v-if="form.images.length < 3"
-              class="image-item add"
-              @click="chooseImage"
-            >
-              <text class="add-icon">+</text>
-            </view>
-          </view>
-        </view>
       </scroll-view>
-      
+
+      <!-- 底部提交按钮 -->
       <view class="modal-footer">
-        <button class="btn-save" @click="save" :disabled="!canSave">
-          {{ isEdit ? '保存' : '记一笔' }}
-        </button>
+        <u-button
+          :text="isEdit ? '保存' : '确认'"
+          shape="circle"
+          size="large"
+          :color="canSave ? 'linear-gradient(135deg, #3E8FD4 0%, #2E6FA8 100%)' : '#ccc'"
+          :disabled="!canSave"
+          @click="save"
+        />
       </view>
     </view>
-  </view>
+  </u-popup>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import AmountInput from './AmountInput.vue'
 import DatePicker from './DatePicker.vue'
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/utils/constants'
+import { EXPENSE_CATEGORIES } from '@/utils/constants'
 import { formatDate } from '@/utils/date'
 import type { Record, Category } from '@/types'
 
@@ -126,64 +110,82 @@ const isEdit = computed(() => !!props.record)
 
 const form = ref({
   amount: 0,
-  type: 'expense' as 'expense' | 'income',
+  type: 'expense' as const,
   categoryId: '',
   categoryName: '',
   categoryIcon: '',
   categoryColor: '',
   date: formatDate(new Date()),
   remark: '',
-  images: [] as string[],
 })
 
-const currentCategories = computed(() => {
-  return form.value.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES
-})
+const amountInput = ref('')
 
 const canSave = computed(() => {
   return form.value.amount > 0 && form.value.categoryId
 })
 
-watch(() => props.visible, (val) => {
-  if (val) {
-    if (props.record) {
-      form.value = {
-        amount: props.record.amount,
-        type: props.record.type,
-        categoryId: props.record.categoryId,
-        categoryName: props.record.categoryName,
-        categoryIcon: props.record.categoryIcon,
-        categoryColor: props.record.categoryColor,
-        date: props.record.date,
-        remark: props.record.remark || '',
-        images: props.record.images || [],
+watch(
+  () => props.visible,
+  val => {
+    if (val) {
+      if (props.record) {
+        form.value = {
+          amount: props.record.amount,
+          type: props.record.type,
+          categoryId: props.record.categoryId,
+          categoryName: props.record.categoryName,
+          categoryIcon: props.record.categoryIcon,
+          categoryColor: props.record.categoryColor,
+          date: props.record.date,
+          remark: props.record.remark || '',
+          images: props.record.images || [],
+        }
+        amountInput.value = props.record.amount.toString()
+      } else {
+        resetForm()
       }
-    } else {
-      resetForm()
     }
   }
+)
+
+watch(amountInput, (val) => {
+  // 限制只能输入数字和小数点
+  let value = val.replace(/[^\d.]/g, '')
+
+  // 限制只能有一个小数点
+  const parts = value.split('.')
+  if (parts.length > 2) {
+    value = parts[0] + '.' + parts.slice(1).join('')
+  }
+
+  // 限制小数点后两位
+  if (parts[1] && parts[1].length > 2) {
+    value = parts[0] + '.' + parts[1].slice(0, 2)
+  }
+
+  // 限制最大金额
+  const numValue = parseFloat(value) || 0
+  if (numValue > 9999999.99) {
+    value = '9999999.99'
+  }
+
+  amountInput.value = value
+  form.value.amount = parseFloat(value) || 0
 })
 
 const resetForm = () => {
   form.value = {
     amount: 0,
-    type: 'expense',
+    type: 'expense' as const,
     categoryId: '',
     categoryName: '',
     categoryIcon: '',
     categoryColor: '',
     date: formatDate(new Date()),
     remark: '',
-    images: [],
   }
-}
-
-const switchType = (type: 'expense' | 'income') => {
-  form.value.type = type
-  form.value.categoryId = ''
-  form.value.categoryName = ''
-  form.value.categoryIcon = ''
-  form.value.categoryColor = ''
+  amountInput.value = ''
 }
 
 const selectCategory = (category: Category) => {
@@ -193,29 +195,15 @@ const selectCategory = (category: Category) => {
   form.value.categoryColor = category.color
 }
 
-const chooseImage = () => {
-  uni.chooseImage({
-    count: 3 - form.value.images.length,
-    sizeType: ['compressed'],
-    sourceType: ['album', 'camera'],
-    success: (res) => {
-      form.value.images.push(...res.tempFilePaths)
-    },
-  })
-}
-
-const removeImage = (index: number) => {
-  form.value.images.splice(index, 1)
-}
-
 const save = () => {
   if (!canSave.value) return
-  
+
   const data = {
     ...form.value,
     id: props.record?.id,
+    images: [],
   }
-  
+
   emit('save', data)
   close()
 }
@@ -225,216 +213,121 @@ const close = () => {
 }
 </script>
 
-<style>
-.record-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  display: flex;
-  align-items: flex-end;
-}
-
-.record-modal .modal-content {
-  width: 100%;
-  max-height: 85vh;
-  background: #fff;
-  border-radius: 32rpx 32rpx 0 0;
+<style scoped>
+.modal-container {
   display: flex;
   flex-direction: column;
+  max-height: 75vh;
 }
 
-.record-modal .modal-header {
+.modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 32rpx;
+  padding: 24rpx 32rpx;
   border-bottom: 1rpx solid #f0f0f0;
+  flex-shrink: 0;
 }
 
-.record-modal .modal-header .title {
+.modal-title {
   font-size: 32rpx;
   font-weight: 600;
   color: #333;
 }
 
-.record-modal .modal-header .close-btn {
-  font-size: 48rpx;
-  color: #999;
-  line-height: 1;
-}
-
-.record-modal .modal-body {
+.modal-body {
   flex: 1;
-  padding: 32rpx;
+  padding: 20rpx 32rpx;
+  overflow-y: auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.record-modal .type-tabs {
+.amount-section {
   display: flex;
-  justify-content: center;
-  margin: 32rpx 0;
+  align-items: center;
+  padding: 12rpx 0;
+  border-bottom: 2rpx solid #e0e0e0;
+  margin-bottom: 12rpx;
 }
 
-.record-modal .type-tabs .tab {
-  padding: 16rpx 48rpx;
-  font-size: 28rpx;
-  color: #666;
-  position: relative;
-}
-
-.record-modal .type-tabs .tab.active {
-  color: #4CAF50;
-  font-weight: 500;
-}
-
-.record-modal .type-tabs .tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40rpx;
-  height: 4rpx;
-  background: #4CAF50;
-  border-radius: 2rpx;
-}
-
-.record-modal .section {
-  margin-bottom: 32rpx;
-}
-
-.record-modal .section .section-title {
-  display: block;
-  font-size: 28rpx;
+.currency {
+  font-size: 48rpx;
+  font-weight: bold;
   color: #333;
+  margin-right: 16rpx;
+}
+
+.amount-input {
+  flex: 1;
+  font-size: 48rpx;
+  color: #333;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+
+.section {
   margin-bottom: 16rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.section.date-section {
+  margin-bottom: 12rpx;
+}
+
+.section-title {
+  display: block;
+  font-size: 24rpx;
+  color: #333;
+  margin-bottom: 8rpx;
   font-weight: 500;
 }
 
-.record-modal .category-grid {
+.category-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16rpx;
+  gap: 12rpx 8rpx;
 }
 
-.record-modal .category-item {
+.category-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16rpx 8rpx;
-  border-radius: 12rpx;
+  cursor: pointer;
 }
 
-.record-modal .category-item.active {
-  background: #f0f8f0;
-}
-
-.record-modal .category-item.active .icon {
-  transform: scale(1.1);
-}
-
-.record-modal .category-item .icon {
-  width: 80rpx;
-  height: 80rpx;
+.category-icon {
+  width: 72rpx;
+  height: 72rpx;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8rpx;
-  transition: transform 0.2s;
+  margin-bottom: 6rpx;
+  transition: all 0.2s;
 }
 
-.record-modal .category-item .icon .iconfont {
-  font-size: 36rpx;
-}
-
-.record-modal .category-item .name {
+.category-name {
   font-size: 22rpx;
   color: #666;
+  text-align: center;
 }
 
-.record-modal .remark-input {
-  width: 100%;
-  height: 120rpx;
-  padding: 16rpx;
-  background: #f5f5f5;
-  border-radius: 8rpx;
-  font-size: 28rpx;
-}
-
-.record-modal .image-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16rpx;
-}
-
-.record-modal .image-item {
-  width: 160rpx;
-  height: 160rpx;
-  border-radius: 8rpx;
-  overflow: hidden;
-  position: relative;
-}
-
-.record-modal .image-item image {
-  width: 100%;
-  height: 100%;
-}
-
-.record-modal .image-item .delete-btn {
-  position: absolute;
-  top: 4rpx;
-  right: 4rpx;
-  width: 40rpx;
-  height: 40rpx;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28rpx;
-}
-
-.record-modal .image-item.add {
-  background: #f5f5f5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.record-modal .image-item.add .add-icon {
-  font-size: 60rpx;
-  color: #999;
-}
-
-.record-modal .modal-footer {
-  padding: 24rpx 32rpx;
-  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
-  border-top: 1rpx solid #f0f0f0;
-}
-
-.record-modal .btn-save {
-  width: 100%;
-  height: 88rpx;
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-  color: #fff;
-  border-radius: 44rpx;
-  font-size: 32rpx;
+.category-name.active {
+  color: #333;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.record-modal .btn-save[disabled] {
-  opacity: 0.5;
+.remark-section {
+  margin-bottom: 0;
 }
 
-.record-modal .btn-save:active {
-  opacity: 0.9;
+.modal-footer {
+  padding: 16rpx 32rpx;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid #f0f0f0;
+  flex-shrink: 0;
 }
 </style>

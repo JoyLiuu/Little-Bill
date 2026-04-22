@@ -1,12 +1,15 @@
 <template>
   <view class="amount-input">
     <text class="currency">¥</text>
-    <input
+    <u-input
       class="input"
       type="digit"
       :value="displayValue"
       :placeholder="placeholder"
       :focus="focus"
+      border="none"
+      fontSize="48rpx"
+      color="#333"
       @input="onInput"
       @blur="onBlur"
     />
@@ -85,10 +88,6 @@ const onBlur = () => {
   
   .input {
     flex: 1;
-    font-size: 48rpx;
-    font-weight: bold;
-    color: #333;
-    height: 80rpx;
   }
 }
 </style>
