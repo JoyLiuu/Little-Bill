@@ -29,6 +29,24 @@ const icons = [
       }
     }
   },
+  // 添加 - 加号形状
+  {
+    name: 'add',
+    draw: (image, color) => {
+      // 垂直线
+      for (let y = 10; y < 38; y++) {
+        for (let x = 21; x < 27; x++) {
+          image.setPixelColor(color, x, y);
+        }
+      }
+      // 水平线
+      for (let x = 10; x < 38; x++) {
+        for (let y = 21; y < 27; y++) {
+          image.setPixelColor(color, x, y);
+        }
+      }
+    }
+  },
   // 记账本 - 笔记本形状
   {
     name: 'ledger',

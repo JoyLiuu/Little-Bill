@@ -16,15 +16,21 @@
       }
     },
     {
-      "path": "pages/ledger/ledger",
-      "style": {
-        "navigationBarTitleText": "记账本"
-      }
-    },
-    {
       "path": "pages/statistics/statistics",
       "style": {
         "navigationBarTitleText": "统计"
+      }
+    },
+    {
+      "path": "pages/add/add",
+      "style": {
+        "navigationBarTitleText": "记一笔"
+      }
+    },
+    {
+      "path": "pages/ledger/ledger",
+      "style": {
+        "navigationBarTitleText": "记账本"
       }
     },
     {
@@ -71,16 +77,16 @@
         "selectedIconPath": "static/tabbar/home-active.png"
       },
       {
-        "pagePath": "pages/ledger/ledger",
-        "text": "记账本",
-        "iconPath": "static/tabbar/ledger.png",
-        "selectedIconPath": "static/tabbar/ledger-active.png"
-      },
-      {
         "pagePath": "pages/statistics/statistics",
         "text": "统计",
         "iconPath": "static/tabbar/chart.png",
         "selectedIconPath": "static/tabbar/chart-active.png"
+      },
+      {
+        "pagePath": "pages/add/add",
+        "text": "",
+        "iconPath": "static/tabbar/add.png",
+        "selectedIconPath": "static/tabbar/add.png"
       },
       {
         "pagePath": "pages/funds/funds",

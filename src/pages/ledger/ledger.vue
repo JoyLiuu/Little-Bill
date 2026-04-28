@@ -62,7 +62,7 @@
                 <text class="text-base font-medium text-gray-800 block">{{ record.categoryName }}</text>
                 <text class="text-sm text-gray-400" v-if="record.remark">{{ record.remark }}</text>
               </view>
-              <text 
+              <text
                 class="text-lg font-medium"
                 :class="record.type === 'expense' ? 'text-danger' : 'text-primary'"
               >
@@ -87,7 +87,7 @@
     </scroll-view>
 
     <!-- 悬浮记账按钮 -->
-    <view 
+    <view
       class="fixed rounded-full flex items-center justify-center z-50"
       style="right: 48rpx; bottom: 180rpx; width: 96rpx; height: 96rpx; background: linear-gradient(135deg, #3E8FD4 0%, #2E6FA8 100%); box-shadow: 0 8rpx 24rpx rgba(184, 169, 201, 0.3);"
       @click="showRecordModal = true"
@@ -151,7 +151,7 @@ const monthExpense = computed(() => {
 
 const groupedRecords = computed(() => {
   const groups: { [key: string]: { date: string; total: number; records: Record[] } } = {}
-  
+
   monthRecords.value.forEach(record => {
     if (!groups[record.date]) {
       groups[record.date] = {

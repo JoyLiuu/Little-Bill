@@ -3,12 +3,14 @@ import 'dayjs/locale/zh-cn'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+import dayOfYear from 'dayjs/plugin/dayOfYear'
 
 // 配置 dayjs
 dayjs.locale('zh-cn')
 dayjs.extend(relativeTime)
 dayjs.extend(isSameOrBefore)
 dayjs.extend(isSameOrAfter)
+dayjs.extend(dayOfYear)
 
 // 格式化日期为 YYYY-MM-DD
 export function formatDate(date: dayjs.ConfigType): string {

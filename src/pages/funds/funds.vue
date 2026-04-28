@@ -1,106 +1,113 @@
 <template>
-  <view class="funds-page">
-    <!-- 顶部总览 -->
-    <view class="header">
-      <view class="overview-card">
-        <view class="overview-item">
-          <text class="label">总投入</text>
-          <text class="value">¥{{ formatAmount(totalInvested) }}</text>
+  <view class="min-h-screen bg-gray-50 flex flex-col">
+    <!-- 顶部总览卡片 -->
+    <view class="px-4 pt-12 pb-6" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);">
+      <view class="bg-white/15 rounded-2xl p-6 flex items-center">
+        <!-- 总投入 -->
+        <view class="flex-1 text-center">
+          <text class="text-sm text-white/80 block mb-2">总投入</text>
+          <text class="text-3xl font-bold text-white">¥{{ formatAmount(totalInvested) }}</text>
         </view>
-        <view class="divider"></view>
-        <view class="overview-item">
-          <text class="label">资金池</text>
-          <text class="value">{{ fundStats.total }}/{{ fundStats.active }}/{{ fundStats.completed }}</text>
-          <text class="sub-label">总/进行中/已完成</text>
+        <!-- 分隔线 -->
+        <view class="w-px h-16 bg-white/20 mx-4"></view>
+        <!-- 资金池统计 -->
+        <view class="flex-1 text-center">
+          <text class="text-sm text-white/80 block mb-2">资金池</text>
+          <text class="text-3xl font-bold text-white">{{ fundStats.total }}/{{ fundStats.active }}/{{ fundStats.completed }}</text>
+          <text class="text-xs text-white/60 block mt-1">总/进行中/已完成</text>
         </view>
       </view>
     </view>
 
     <!-- 资金池列表 -->
-    <scroll-view class="funds-list" scroll-y>
+    <scroll-view class="flex-1 px-4 py-4" scroll-y>
       <view v-if="allFunds.length > 0">
         <view
           v-for="fund in allFunds"
           :key="fund.id"
-          class="fund-card"
-          :style="{ borderLeftColor: fund.color }"
+          class="bg-white rounded-2xl p-5 mb-4"
+          :style="{ borderLeftWidth: '4rpx', borderLeftColor: fund.color, borderLeftStyle: 'solid' }"
         >
-          <view class="fund-header">
-            <view class="fund-title">
-              <view class="color-dot" :style="{ backgroundColor: fund.color }"></view>
-              <text class="name">{{ fund.name }}</text>
-              <u-tag
-                :text="fund.status === 'active' ? '进行中' : '已完成'"
-                :type="fund.status === 'active' ? 'success' : 'warning'"
-                size="mini"
-              />
+          <!-- 标题行 -->
+          <view class="flex items-center justify-between mb-4">
+            <view class="flex items-center">
+              <view class="w-3 h-3 rounded-full mr-2" :style="{ backgroundColor: fund.color }"></view>
+              <text class="text-base font-semibold text-gray-800">{{ fund.name }}</text>
+              <view 
+                class="ml-2 px-2 py-0.5 rounded text-xs"
+                :class="fund.status === 'active' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'"
+              >
+                {{ fund.status === 'active' ? '进行中' : '已完成' }}
+              </view>
             </view>
           </view>
 
-          <view class="fund-progress">
-            <view class="progress-info">
-              <text class="current">¥{{ formatAmount(fund.currentAmount) }}</text>
-              <text class="target">/ ¥{{ formatAmount(fund.targetAmount) }}</text>
+          <!-- 进度信息 -->
+          <view class="mb-3">
+            <view class="flex items-baseline mb-2">
+              <text class="text-2xl font-bold text-gray-800">¥{{ formatAmount(fund.currentAmount) }}</text>
+              <text class="text-sm text-gray-400 ml-2">/ ¥{{ formatAmount(fund.targetAmount) }}</text>
             </view>
-            <u-line-progress
-              :percentage="Math.min(Math.round((fund.currentAmount / fund.targetAmount) * 100), 100)"
-              :active-color="fund.color"
-              height="12"
-              :show-percent="false"
-            />
-            <view class="progress-detail">
-              <u-text
-                :text="`${Math.round((fund.currentAmount / fund.targetAmount) * 100)}%`"
-                size="24"
-                :color="fund.color"
-                bold
-              />
-              <u-text
-                v-if="fund.status === 'active'"
-                :text="`还需 ¥${formatAmount(Math.max(0, fund.targetAmount - fund.currentAmount))}`"
-                size="24"
-                color="#999"
-              />
+            <!-- 进度条 -->
+            <view class="h-3 bg-gray-100 rounded-full overflow-hidden">
+              <view 
+                class="h-full rounded-full transition-all"
+                :style="{ 
+                  width: Math.min(Math.round((fund.currentAmount / fund.targetAmount) * 100), 100) + '%',
+                  backgroundColor: fund.color 
+                }"
+              ></view>
+            </view>
+            <view class="flex justify-between mt-2">
+              <text class="text-sm font-medium" :style="{ color: fund.color }">
+                {{ Math.round((fund.currentAmount / fund.targetAmount) * 100) }}%
+              </text>
+              <text v-if="fund.status === 'active'" class="text-xs text-gray-400">
+                还需 ¥{{ formatAmount(Math.max(0, fund.targetAmount - fund.currentAmount)) }}
+              </text>
             </view>
           </view>
 
-          <view class="fund-actions">
-            <u-button
-              :text="'存入'"
-              size="small"
-              :color="fund.color"
-              shape="circle"
+          <!-- 操作按钮 -->
+          <view class="flex gap-3">
+            <view
+              class="flex-1 py-2 rounded-full text-center text-sm text-white"
+              :style="{ backgroundColor: fund.color }"
               @click="openOperationModal(fund, 'deposit')"
-            />
-            <u-button
-              :text="'取出'"
-              size="small"
-              type="info"
-              shape="circle"
-              :disabled="fund.currentAmount <= 0"
-              @click="openOperationModal(fund, 'withdraw')"
-            />
+            >
+              存入
+            </view>
+            <view
+              class="flex-1 py-2 rounded-full text-center text-sm bg-gray-100 text-gray-600"
+              :class="{ 'opacity-50': fund.currentAmount <= 0 }"
+              @click="fund.currentAmount > 0 && openOperationModal(fund, 'withdraw')"
+            >
+              取出
+            </view>
           </view>
         </view>
       </view>
 
       <!-- 空状态 -->
-      <view class="empty-state" v-else>
-        <u-icon name="rmb-circle" size="100" color="#ccc"></u-icon>
-        <u-text text="还没有资金池" size="20" color="#666" bold class="mt-4"></u-text>
-        <u-text text="点击下方按钮创建第一个资金池" size="26" color="#999" class="mt-2"></u-text>
+      <view v-else class="flex flex-col items-center justify-center py-24">
+        <view class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center mb-6">
+          <text class="text-5xl text-gray-400">¥</text>
+        </view>
+        <text class="text-lg font-medium text-gray-700 mb-2">还没有资金池</text>
+        <text class="text-sm text-gray-400">点击下方按钮创建第一个资金池</text>
       </view>
     </scroll-view>
 
-    <!-- 新建按钮 -->
-    <u-button
-      :text="'新建资金池'"
-      size="large"
-      color="linear-gradient(135deg, #4CAF50 0%, #45a049 100%)"
-      shape="circle"
-      :customStyle="createBtnStyle"
-      @click="showFundModal = true"
-    />
+    <!-- 底部新建按钮 -->
+    <view class="px-4 pb-6 pt-2 bg-gray-50">
+      <view
+        class="w-full py-4 rounded-full text-center text-white font-medium"
+        style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); box-shadow: 0 8rpx 24rpx rgba(76, 175, 80, 0.3);"
+        @click="showFundModal = true"
+      >
+        新建资金池
+      </view>
+    </view>
 
     <!-- 资金池弹窗 -->
     <FundModal
@@ -146,16 +153,6 @@ const fundStats = computed(() => {
   return { total, active, completed }
 })
 
-const createBtnStyle = {
-  position: 'fixed',
-  left: '32rpx',
-  right: '32rpx',
-  bottom: 'calc(40rpx + env(safe-area-inset-bottom))',
-  boxShadow: '0 8rpx 24rpx rgba(76, 175, 80, 0.3)'
-}
-
-
-
 const openOperationModal = (fund: FundPool, type: 'deposit' | 'withdraw') => {
   selectedFund.value = fund
   operationType.value = type
@@ -194,132 +191,3 @@ onMounted(() => {
   fundStore.initFunds()
 })
 </script>
-
-<style lang="scss" scoped>
-.funds-page {
-  min-height: 100vh;
-  background: #f5f5f5;
-  display: flex;
-  flex-direction: column;
-
-  .header {
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-    padding: 40rpx 32rpx;
-    padding-top: 60rpx;
-
-    .overview-card {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 16rpx;
-      padding: 32rpx;
-      display: flex;
-      align-items: center;
-
-      .overview-item {
-        flex: 1;
-        text-align: center;
-
-        .label {
-          display: block;
-          font-size: 24rpx;
-          color: rgba(255, 255, 255, 0.8);
-          margin-bottom: 12rpx;
-        }
-
-        .value {
-          display: block;
-          font-size: 48rpx;
-          color: #fff;
-          font-weight: bold;
-          margin-bottom: 4rpx;
-        }
-
-        .sub-label {
-          font-size: 20rpx;
-          color: rgba(255, 255, 255, 0.6);
-        }
-      }
-
-      .divider {
-        width: 2rpx;
-        height: 80rpx;
-        background: rgba(255, 255, 255, 0.2);
-        margin: 0 32rpx;
-      }
-    }
-  }
-
-  .funds-list {
-    flex: 1;
-    padding: 20rpx;
-
-    .fund-card {
-      background: #fff;
-      border-radius: 16rpx;
-      padding: 24rpx;
-      margin-bottom: 20rpx;
-      border-left: 8rpx solid;
-
-      .fund-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20rpx;
-
-        .fund-title {
-          display: flex;
-          align-items: center;
-
-          .color-dot {
-            width: 16rpx;
-            height: 16rpx;
-            border-radius: 50%;
-            margin-right: 12rpx;
-          }
-
-          .name {
-            font-size: 32rpx;
-            font-weight: 600;
-            color: #333;
-            margin-right: 12rpx;
-          }
-        }
-      }
-
-      .fund-progress {
-        margin-bottom: 24rpx;
-
-        .progress-info {
-          margin-bottom: 12rpx;
-
-          .current {
-            font-size: 40rpx;
-            font-weight: bold;
-            color: #333;
-          }
-
-          .target {
-            font-size: 28rpx;
-            color: #999;
-          }
-        }
-
-        .progress-detail {
-          display: flex;
-          justify-content: space-between;
-          margin-top: 12rpx;
-        }
-      }
-
-      .fund-actions {
-        display: flex;
-        gap: 20rpx;
-      }
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 120rpx 40rpx;
-    }
-  }
-}
-</style>
