@@ -12,13 +12,13 @@
     {
       "path": "pages/index/index",
       "style": {
-        "navigationBarTitleText": "首页"
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/statistics/statistics",
       "style": {
-        "navigationBarTitleText": "统计"
+        "navigationStyle": "custom"
       }
     },
     {
@@ -30,13 +30,13 @@
     {
       "path": "pages/ledger/ledger",
       "style": {
-        "navigationBarTitleText": "记账本"
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/funds/funds",
       "style": {
-        "navigationBarTitleText": "资金池"
+        "navigationStyle": "custom"
       }
     },
     {
